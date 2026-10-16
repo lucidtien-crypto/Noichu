@@ -71,7 +71,6 @@
             font-style: italic; 
         }
 
-        /* Khung chữ với hiệu ứng viền Xanh Ngọc Bích */
         .text-box { 
             width: 100%; 
             flex-grow: 1;
@@ -196,8 +195,8 @@
         const statusDot = document.getElementById('statusDot');
 
         let isManuallyStopped = true;
-        let sessionBaseText = ''; // Gốc văn bản cố định trước mỗi phiên thu âm
-        let phraseHistory = [];  // Lịch sử lưu vết để phục vụ nút "Xóa đoạn vừa nói"
+        let sessionBaseText = ''; 
+        let phraseHistory = [];  
         let undoHistory = ''; 
 
         function notify(message, color) {
@@ -205,7 +204,68 @@
             statusText.style.color = color || "#666";
         }
 
-        // Tự động khôi phục bài làm dở khi mở lại trang
+        // THUẬT TOÁN ĐẶC TRỊ LỖI LẶP CHỮ TRÊN ĐIỆN THOẠI ANDROID/CHROME
+        function getCleanSessionTranscript(results) {
+            let combined = "";
+
+            for (let i = 0; i < results.length; ++i) {
+                let transcript = results[i][0].transcript.trim();
+                if (!transcript) continue;
+
+                transcript = transcript.replace(/\s+/g, ' ');
+
+                if (!combined) {
+                    combined = transcript;
+                    continue;
+                }
+
+                let combinedLower = combined.toLowerCase();
+                let transcriptLower = transcript.toLowerCase();
+
+                // 1. Nếu câu mới chứa câu cũ -> Thay thế (khử trùng lặp nối đè trên Android)
+                if (transcriptLower.startsWith(combinedLower)) {
+                    combined = transcript;
+                    continue;
+                }
+
+                // 2. Nếu câu cũ đã chứa câu mới -> Bỏ qua câu mới
+                if (combinedLower.startsWith(transcriptLower) || combinedLower.endsWith(transcriptLower) || combinedLower.includes(transcriptLower)) {
+                    continue;
+                }
+
+                // 3. Xử lý gối đầu từ (nếu có từ trùng ở giữa)
+                let wordsCombined = combined.split(' ');
+                let wordsTranscript = transcript.split(' ');
+                let merged = false;
+
+                for (let overlapLen = Math.min(wordsCombined.length, wordsTranscript.length); overlapLen > 0; overlapLen--) {
+                    let suffix = wordsCombined.slice(wordsCombined.length - overlapLen).join(' ').toLowerCase();
+                    let prefix = wordsTranscript.slice(0, overlapLen).join(' ').toLowerCase();
+
+                    if (suffix === prefix) {
+                        let remaining = wordsTranscript.slice(overlapLen).join(' ');
+                        if (remaining) {
+                            combined = combined + ' ' + remaining;
+                        }
+                        merged = true;
+                        break;
+                    }
+                }
+
+                if (merged) continue;
+
+                // 4. Nếu là câu mới độc lập hoàn toàn -> Nối tiếp
+                combined = combined + ' ' + transcript;
+            }
+
+            if (combined.length > 0) {
+                combined = combined.charAt(0).toUpperCase() + combined.slice(1);
+            }
+
+            return combined;
+        }
+
+        // Tự động khôi phục bản thảo làm dở khi mở lại trang
         window.addEventListener('DOMContentLoaded', () => {
             const savedDraft = localStorage.getItem('voiceDraftForElderly');
             if (savedDraft && savedDraft.trim() !== '') {
@@ -220,7 +280,6 @@
             btnUndo.style.display = 'flex';
         }
 
-        // Ngắt sạch đệm micro khi thực hiện các thao tác xóa
         function resetMicrophoneIfListening() {
             if (!isManuallyStopped && recognition) {
                 try {
@@ -229,14 +288,14 @@
             }
         }
 
-        // Đồng bộ khi người dùng gõ/sửa bằng tay
+        // Đồng bộ khi gõ/sửa bằng tay
         resultText.addEventListener('input', () => {
             sessionBaseText = resultText.value;
             localStorage.setItem('voiceDraftForElderly', resultText.value);
             resetMicrophoneIfListening();
         });
 
-        // Cấu hình AI Nhận diện giọng nói chống lặp chữ 100%
+        // Khởi tạo AI Nhận diện giọng nói
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
 
@@ -251,47 +310,21 @@
                 statusDot.classList.add('active');
                 resultText.classList.add('recording-jade');
                 
-                // Khóa gốc văn bản hiện tại trước khi bắt đầu nối câu mới
                 sessionBaseText = resultText.value;
                 btnStart.disabled = true;
                 btnStop.disabled = false;
             };
 
             recognition.onresult = function(event) {
-                let sessionFinals = '';
-                let sessionInterim = '';
+                // Áp dụng thuật toán lọc trùng chữ
+                let sessionText = getCleanSessionTranscript(event.results);
 
-                // Quét lại toàn bộ danh sách kết quả của phiên hiện tại từ 0 -> length
-                for (let i = 0; i < event.results.length; ++i) {
-                    let transcript = event.results[i][0].transcript.trim();
-                    if (transcript === '') continue;
-
-                    if (event.results[i].isFinal) {
-                        // Viết hoa chữ đầu câu
-                        transcript = transcript.charAt(0).toUpperCase() + transcript.slice(1);
-                        if (sessionFinals !== '') sessionFinals += ' ';
-                        sessionFinals += transcript;
-                    } else {
-                        if (sessionInterim !== '') sessionInterim += ' ';
-                        sessionInterim += transcript;
-                    }
-                }
-
-                // Tái dựng lại văn bản: [Gốc cũ] + [Các câu đã chốt trong phiên] + [Chữ đang nói dở]
                 let fullText = sessionBaseText;
-
-                if (sessionFinals !== '') {
+                if (sessionText !== '') {
                     if (fullText !== '' && !fullText.endsWith(' ') && !fullText.endsWith('\n')) {
                         fullText += ' ';
                     }
-                    fullText += sessionFinals;
-                }
-
-                if (sessionInterim !== '') {
-                    if (fullText !== '' && !fullText.endsWith(' ') && !fullText.endsWith('\n')) {
-                        fullText += ' ';
-                    }
-                    fullText += sessionInterim;
+                    fullText += sessionText;
                 }
 
                 resultText.value = fullText;
@@ -300,11 +333,9 @@
             };
 
             recognition.onend = function() {
-                // Cập nhật gốc văn bản mới nhất sau khi ngắt session
                 sessionBaseText = resultText.value;
 
                 if (!isManuallyStopped) {
-                    // Lưu snapshot hỗ trợ nút Xóa đoạn
                     if (sessionBaseText.trim() !== '') {
                         phraseHistory.push(sessionBaseText);
                     }
@@ -335,7 +366,6 @@
 
         // --- CÁC NÚT XÓA THÔNG MINH ---
 
-        // 1. Xóa tất cả
         btnClearAll.addEventListener('click', () => {
             if (resultText.value.trim() !== '') {
                 saveStateForUndo();
@@ -348,7 +378,6 @@
             }
         });
 
-        // 2. Xóa 1 từ
         btnDeleteWord.addEventListener('click', () => {
             let text = resultText.value.trimEnd();
             if (text.length > 0) {
@@ -363,7 +392,6 @@
             }
         });
 
-        // 3. Xóa đoạn vừa nói
         btnDeleteChunk.addEventListener('click', () => {
             saveStateForUndo();
             if (phraseHistory.length > 0) {
@@ -372,7 +400,7 @@
                 sessionBaseText = prevText;
             } else if (resultText.value.trim() !== '') {
                 let words = resultText.value.trim().split(/\s+/);
-                words.splice(-5); // Xóa 5 từ gần nhất nếu không có lịch sử
+                words.splice(-5);
                 let newText = words.join(' ');
                 resultText.value = newText;
                 sessionBaseText = newText;
@@ -382,7 +410,6 @@
             notify("Đã xóa đoạn vừa nói.", "#263238");
         });
 
-        // 4. Khôi phục lại
         btnUndo.addEventListener('click', () => {
             resultText.value = undoHistory;
             sessionBaseText = undoHistory;
@@ -435,7 +462,6 @@
             }
         });
 
-        // Điều khiển chính
         btnStart.addEventListener('click', () => {
             isManuallyStopped = false;
             sessionBaseText = resultText.value;
