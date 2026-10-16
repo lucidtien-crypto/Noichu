@@ -304,59 +304,61 @@
 
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
-            recognition.continuous = true; 
+            // ĐỔI SANG FALSE ĐỂ DIỆT SẠCH LỖI LẶP CHỮ TRÊN CHROME ANDROID
+            recognition.continuous = false; 
             recognition.interimResults = true; 
             recognition.lang = 'vi-VN';
 
+            let currentSessionFinal = '';
+
             recognition.onstart = function() {
-                notify("Đang thu âm... <br><span style='font-size: 0.95rem;'>(Bấm các nút màu xanh phía trên để chèn nhanh dấu)</span>", "#00A86B");
+                notify("Đang thu âm... <br><span style='font-size: 0.95rem;'>(Cứ nói từ từ, dừng lại ngẫm nghĩ máy vẫn đợi)</span>", "#00A86B");
                 statusDot.classList.add('active');
                 resultText.classList.add('recording-jade');
                 
-                baseText = resultText.value;
+                currentSessionFinal = '';
                 btnStart.disabled = true;
                 btnStop.disabled = false;
             };
 
             recognition.onresult = function(event) {
-                let sessionFinals = '';
-                let sessionInterim = '';
+                let interim = '';
 
-                // TÁI DỰNG CHÍNH XÁC TỪ EVENT RESULTS - TUYỆT ĐỐI KHÔNG CỘNG DỒN BIẾN TOÀN CỤC
-                for (let i = 0; i < event.results.length; ++i) {
-                    let transcript = event.results[i][0].transcript;
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
                     if (event.results[i].isFinal) {
-                        sessionFinals += transcript.trim() + ' ';
+                        currentSessionFinal += event.results[i][0].transcript.trim() + ' ';
                     } else {
-                        sessionInterim += transcript;
+                        interim += event.results[i][0].transcript;
                     }
                 }
 
-                let currentText = baseText;
+                let textToShow = baseText;
 
-                if (sessionFinals.trim() !== '') {
-                    if (currentText && !currentText.endsWith(' ') && !currentText.endsWith('\n')) {
-                        currentText += ' ';
+                if (currentSessionFinal.trim()) {
+                    if (textToShow && !textToShow.endsWith(' ') && !textToShow.endsWith('\n')) {
+                        textToShow += ' ';
                     }
-                    currentText += sessionFinals;
+                    textToShow += currentSessionFinal.trim();
                 }
 
-                if (sessionInterim.trim() !== '') {
-                    if (currentText && !currentText.endsWith(' ') && !currentText.endsWith('\n')) {
-                        currentText += ' ';
+                if (interim.trim()) {
+                    if (textToShow && !textToShow.endsWith(' ') && !textToShow.endsWith('\n')) {
+                        textToShow += ' ';
                     }
-                    currentText += sessionInterim;
+                    textToShow += interim.trim();
                 }
 
-                currentText = autoCapitalize(currentText);
-                resultText.value = currentText;
+                textToShow = autoCapitalize(textToShow);
+                resultText.value = textToShow;
                 resultText.scrollTop = resultText.scrollHeight;
-                localStorage.setItem('voiceDraftForElderly', currentText);
             };
 
             recognition.onend = function() {
+                // CHỐT CÂU VÀO BASETEXT KHI KẾT THÚC PHIÊN VỪA NÓI
                 baseText = resultText.value;
+                localStorage.setItem('voiceDraftForElderly', baseText);
 
+                // TỰ ĐỘNG KHỞI ĐỘNG LẠI PHIÊN MỚI TINH SẠCH MỖI KHI TỰ NGẮT/NGẬP NGỪNG
                 if (!isManuallyStopped) {
                     try { recognition.start(); } catch (e) {}
                 } else {
