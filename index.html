@@ -181,8 +181,9 @@
         const meterBar = document.getElementById('meterBar');
 
         let isManuallyStopped = true;
-        let confirmedText = ''; 
-        let phraseHistory = []; 
+        
+        // MẢNG DANH SÁCH LƯU CÁC CÂU NÓI NGUYÊN BẢN (CHỐNG NHẦM THỨ TỰ LƯU)
+        let chunks = []; 
         let undoHistory = ''; 
         
         let audioCtx, analyser, microphone, stream, animId;
@@ -192,12 +193,24 @@
             statusText.style.color = color;
         }
 
-        // Tự động khôi phục bản thảo làm dở khi vừa vào trang
+        // Hàm cập nhật chữ ra màn hình
+        function renderText(interim = '') {
+            let fullText = chunks.join(' ');
+            if (interim.trim() !== '') {
+                if (fullText !== '') fullText += ' ';
+                fullText += interim.trim();
+            }
+            resultText.value = fullText;
+            resultText.scrollTop = resultText.scrollHeight;
+            localStorage.setItem('voiceDraftForElderly', chunks.join(' '));
+        }
+
+        // Tự động tải bản thảo cũ khi vừa mở lại trang
         window.addEventListener('DOMContentLoaded', () => {
             const savedDraft = localStorage.getItem('voiceDraftForElderly');
             if (savedDraft && savedDraft.trim() !== '') {
-                confirmedText = savedDraft;
-                resultText.value = confirmedText;
+                chunks = [savedDraft.trim()];
+                renderText();
                 notify("Đã tự động mở lại bài viết bạn đang làm dở.", "#4CAF50");
             }
         });
@@ -207,29 +220,21 @@
             btnUndo.style.display = 'flex';
         }
 
-        // BỘ LỌC ĐẶC BIỆT: Thực hiện thao tác sửa và XÓA SẠCH bộ nhớ đệm Micro
-        function performEditAndResetMicro(editCallback) {
-            saveStateForUndo();
-            editCallback();
-            
-            resultText.value = confirmedText;
-            localStorage.setItem('voiceDraftForElderly', confirmedText);
-
-            // Nếu đang bật Micro mà thực hiện sửa/xóa, buộc Micro ngắt để xóa đệm âm thanh cũ
+        // Xóa sạch đệm âm thanh Micro khi người dùng can thiệp xóa chữ
+        function resetMicrophoneIfListening() {
             if (!isManuallyStopped && recognition) {
                 try {
-                    recognition.stop(); // Ngắt session hiện tại -> onend sẽ tự khởi tạo session mới tinh
+                    recognition.abort(); // Xóa sạch đệm âm thanh đang chờ xử lý
                 } catch(e) { console.log(e); }
             }
         }
 
-        // Đồng bộ khi người dùng gõ/xóa bằng tay
+        // Đồng bộ khi người dùng gõ tay
         resultText.addEventListener('input', () => {
-            confirmedText = resultText.value;
-            localStorage.setItem('voiceDraftForElderly', confirmedText);
-            if (!isManuallyStopped && recognition) {
-                try { recognition.stop(); } catch(e) {}
-            }
+            let val = resultText.value.trim();
+            chunks = val ? [val] : [];
+            localStorage.setItem('voiceDraftForElderly', resultText.value);
+            resetMicrophoneIfListening();
         });
 
         // Xử lý Micro & Vạch âm thanh
@@ -270,7 +275,7 @@
             meterBar.style.width = '0%';
         }
 
-        // Nhận diện giọng nói
+        // Nhận diện giọng nói chuẩn xác
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
 
@@ -297,30 +302,15 @@
                     if (event.results[i].isFinal) {
                         let cleanText = transcript.trim();
                         if (cleanText !== '') {
-                            phraseHistory.push(confirmedText);
                             cleanText = cleanText.charAt(0).toUpperCase() + cleanText.slice(1);
-                            
-                            if (confirmedText !== '' && !confirmedText.endsWith(' ') && !confirmedText.endsWith('\n')) {
-                                confirmedText += ' ';
-                            }
-                            confirmedText += cleanText;
+                            chunks.push(cleanText); // Đưa câu vừa nói vào cuối danh sách
                         }
                     } else {
                         interimTranscript += transcript;
                     }
                 }
                 
-                let displayText = confirmedText;
-                if (interimTranscript.trim() !== '') {
-                    if (displayText !== '' && !displayText.endsWith(' ') && !displayText.endsWith('\n')) {
-                        displayText += ' ';
-                    }
-                    displayText += interimTranscript;
-                }
-
-                resultText.value = displayText;
-                resultText.scrollTop = resultText.scrollHeight;
-                localStorage.setItem('voiceDraftForElderly', confirmedText);
+                renderText(interimTranscript);
             };
 
             recognition.onend = function() {
@@ -355,58 +345,62 @@
         // 1. Xóa tất cả
         btnClearAll.addEventListener('click', () => {
             if (resultText.value.trim() !== '') {
-                performEditAndResetMicro(() => {
-                    confirmedText = '';
-                    phraseHistory = [];
-                    localStorage.removeItem('voiceDraftForElderly');
-                });
+                saveStateForUndo();
+                chunks = [];
+                renderText();
+                localStorage.removeItem('voiceDraftForElderly');
+                resetMicrophoneIfListening();
                 notify("Đã xóa sạch chữ. (Bấm 'Khôi phục' ở dưới nếu bấm nhầm)", "#D32F2F");
             }
         });
 
         // 2. Xóa 1 từ
         btnDeleteWord.addEventListener('click', () => {
-            let text = resultText.value.trimEnd();
+            let current = chunks.join(' ');
+            if (!current.trim()) current = resultText.value;
+            
+            let text = current.trimEnd();
             if (text.length > 0) {
-                performEditAndResetMicro(() => {
-                    let lastSpaceIndex = text.lastIndexOf(' ');
-                    if (lastSpaceIndex !== -1) {
-                        confirmedText = text.substring(0, lastSpaceIndex);
-                    } else {
-                        confirmedText = '';
-                    }
-                });
+                saveStateForUndo();
+                let lastSpaceIndex = text.lastIndexOf(' ');
+                let newText = (lastSpaceIndex !== -1) ? text.substring(0, lastSpaceIndex) : '';
+                chunks = newText ? [newText] : [];
+                renderText();
+                resetMicrophoneIfListening();
                 notify("Đã xóa 1 từ vừa rồi.", "#37474F");
             }
         });
 
-        // 3. Xóa đoạn vừa nói
+        // 3. Xóa đoạn vừa nói (XÓA ĐÚNG CÂU VỪA NÓI GẦN NHẤT)
         btnDeleteChunk.addEventListener('click', () => {
-            if (phraseHistory.length > 0) {
-                performEditAndResetMicro(() => {
-                    confirmedText = phraseHistory.pop();
-                });
+            if (chunks.length > 0) {
+                saveStateForUndo();
+                chunks.pop(); // Xóa đúng phần tử cuối cùng vừa nói
+                renderText();
+                resetMicrophoneIfListening();
                 notify("Đã xóa đoạn vừa nói.", "#263238");
             } else if (resultText.value.trim() !== '') {
-                performEditAndResetMicro(() => {
-                    let words = resultText.value.trim().split(' ');
-                    words.splice(-5);
-                    confirmedText = words.join(' ');
-                });
+                saveStateForUndo();
+                let words = resultText.value.trim().split(/\s+/);
+                words.splice(-5);
+                chunks = words.length ? [words.join(' ')] : [];
+                renderText();
+                resetMicrophoneIfListening();
                 notify("Đã xóa một vài từ vừa rồi.", "#263238");
             }
         });
 
         // 4. Khôi phục
         btnUndo.addEventListener('click', () => {
-            performEditAndResetMicro(() => {
-                confirmedText = undoHistory;
-            });
+            saveStateForUndo();
+            chunks = undoHistory.trim() ? [undoHistory.trim()] : [];
+            renderText();
             btnUndo.style.display = 'none';
+            resetMicrophoneIfListening();
             notify("Đã khôi phục lại chữ thành công!", "#4CAF50");
         });
 
-        // --- LƯU & MỞ BẢN THẢO VỚI NGÀY GIỜ ---
+        // --- TẢI & MỞ BẢN THẢO VỚI NGÀY GIỜ ---
 
         btnSave.addEventListener('click', () => {
             const text = resultText.value;
@@ -439,10 +433,8 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(evt) {
-                    confirmedText = evt.target.result;
-                    resultText.value = confirmedText;
-                    phraseHistory = [confirmedText];
-                    localStorage.setItem('voiceDraftForElderly', confirmedText);
+                    chunks = [evt.target.result.trim()];
+                    renderText();
                     notify("Đã mở nội dung bản thảo lên thành công!", "#9C27B0");
                 };
                 reader.readAsText(file, 'UTF-8');
@@ -452,7 +444,9 @@
         // Điều khiển chính
         btnStart.addEventListener('click', () => {
             isManuallyStopped = false;
-            confirmedText = resultText.value;
+            if (resultText.value.trim() && chunks.length === 0) {
+                chunks = [resultText.value.trim()];
+            }
             recognition.start();
         });
 
