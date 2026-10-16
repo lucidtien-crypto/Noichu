@@ -20,7 +20,7 @@
         }
         
         .container { 
-            max-width: 800px; 
+            max-width: 850px; 
             width: 100%; 
             display: flex;
             flex-direction: column;
@@ -45,17 +45,15 @@
             transition: color 0.3s;
         }
 
-        /* Thước đo tín hiệu âm thanh trực quan */
+        /* Thước đo âm lượng */
         .meter-container {
             width: 100%;
-            height: 12px;
+            height: 10px;
             background-color: #E0E0E0;
-            border-radius: 6px;
+            border-radius: 5px;
             overflow: hidden;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+            margin-bottom: 10px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
         }
 
         .meter-bar {
@@ -63,13 +61,13 @@
             width: 0%;
             background: linear-gradient(90deg, #4CAF50, #FFEB3B, #F44336);
             transition: width 0.1s ease-out;
-            border-radius: 6px;
+            border-radius: 5px;
         }
 
         .text-box { 
             width: 100%; 
             flex-grow: 1;
-            min-height: 230px;
+            min-height: 220px;
             font-size: 28px; 
             line-height: 1.6; 
             padding: 1.2rem; 
@@ -85,42 +83,59 @@
         .text-box:focus { outline: none; border-color: #A3C1AD; }
         .listening-glow { border-color: #4CAF50; box-shadow: 0 0 15px rgba(76, 175, 80, 0.4); }
         
-        .controls { 
+        /* Bố cục nút bấm chia làm 2 tầng rõ ràng */
+        .controls-main { 
             display: grid;
             grid-template-columns: 1fr 1fr; 
             gap: 10px; 
             margin-top: 15px; 
         }
+
+        .controls-edit {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
         
         button { 
-            font-size: 1.3rem; 
-            padding: 16px 12px; 
+            font-size: 1.25rem; 
+            padding: 16px 10px; 
             border: none; 
             border-radius: 12px; 
             cursor: pointer; 
             display: flex; 
             align-items: center; 
             justify-content: center;
-            gap: 10px; 
+            gap: 8px; 
             transition: all 0.2s ease; 
             font-weight: 600; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
         }
         
         button:active { transform: translateY(2px); }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
         
-        .btn-start { background-color: #4CAF50; color: white; grid-column: 1 / -1; font-size: 1.4rem; padding: 20px 15px;} 
+        /* Màu sắc nút chính */
+        .btn-start { background-color: #4CAF50; color: white; grid-column: 1 / -1; font-size: 1.4rem; padding: 18px 15px;} 
         .btn-stop { background-color: #E57373; color: white; }
         .btn-copy { background-color: #64B5F6; color: white; }
         .btn-save { background-color: #FFB74D; color: #333; }
         .btn-open { background-color: #BA68C8; color: white; }
 
+        /* Nút chỉnh sửa & Nút X đỏ */
+        .btn-delete-word { background-color: #ECEFF1; color: #37474F; border: 1px solid #CFD8DC; font-size: 1.1rem; }
+        .btn-delete-sentence { background-color: #CFD8DC; color: #263238; font-size: 1.1rem; }
+        .btn-clear-all { background-color: #D32F2F; color: white; font-size: 1.1rem; } /* Nút X Đỏ */
+        .btn-undo { background-color: #78909C; color: white; font-size: 1.1rem; }
+
         @media (max-width: 600px) {
             h1 { font-size: 1.5rem; }
             .text-box { font-size: 24px; padding: 1rem; }
-            .controls { grid-template-columns: 1fr; gap: 10px; }
+            .controls-main { grid-template-columns: 1fr; gap: 8px; }
+            .controls-edit { grid-template-columns: 1fr; gap: 8px; }
             .btn-start { grid-column: auto; } 
+            button { padding: 15px 10px; font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -129,19 +144,27 @@
         <h1>Soạn Thảo Bằng Giọng Nói</h1>
         <div id="statusText" class="status">Sẵn sàng. Hãy bấm "Bắt đầu nói".</div>
         
-        <!-- Vạch đo âm lượng giúp người già tự kiểm tra giọng mình -->
         <div class="meter-container" title="Thước đo âm lượng giọng nói">
             <div id="meterBar" class="meter-bar"></div>
         </div>
 
         <textarea id="resultText" class="text-box" placeholder="Chữ sẽ hiện ra ngay khi bạn nói..."></textarea>
         
-        <div class="controls">
+        <!-- Nhóm nút xóa thông minh cho người lớn tuổi -->
+        <div class="controls-edit">
+            <button id="btnDeleteWord" class="btn-delete-word" title="Xóa 1 từ cuối cùng"><i class="fas fa-backspace"></i> Xóa 1 từ</button>
+            <button id="btnDeleteSentence" class="btn-delete-sentence" title="Xóa câu vừa nói"><i class="fas fa-outdent"></i> Xóa câu cuối</button>
+            <button id="btnClearAll" class="btn-clear-all" title="Xóa toàn bộ chữ"><i class="fas fa-times-circle"></i> Xóa tất cả (X)</button>
+        </div>
+
+        <!-- Nhóm nút chức năng chính -->
+        <div class="controls-main">
             <button id="btnStart" class="btn-start"><i class="fas fa-microphone"></i> Bắt đầu nói</button>
             <button id="btnStop" class="btn-stop" disabled><i class="fas fa-stop-circle"></i> Ngừng lại</button>
             <button id="btnCopy" class="btn-copy"><i class="fas fa-copy"></i> Copy chữ</button>
             <button id="btnSave" class="btn-save"><i class="fas fa-save"></i> Lưu bản thảo</button>
             <button id="btnOpen" class="btn-open"><i class="fas fa-folder-open"></i> Mở bản thảo</button>
+            <button id="btnUndo" class="btn-undo" style="display: none; grid-column: 1 / -1;"><i class="fas fa-undo"></i> Khôi phục lại chữ vừa xóa</button>
         </div>
     </div>
 
@@ -152,35 +175,39 @@
         const btnCopy = document.getElementById('btnCopy');
         const btnSave = document.getElementById('btnSave');
         const btnOpen = document.getElementById('btnOpen');
+        const btnDeleteWord = document.getElementById('btnDeleteWord');
+        const btnDeleteSentence = document.getElementById('btnDeleteSentence');
+        const btnClearAll = document.getElementById('btnClearAll');
+        const btnUndo = document.getElementById('btnUndo');
         const statusText = document.getElementById('statusText');
         const meterBar = document.getElementById('meterBar');
 
         let isManuallyStopped = true;
         let final_transcript = '';
+        let undoHistory = ''; // Bộ nhớ lưu chữ cũ để khôi phục khi xóa nhầm
         
-        // Cấu hình âm thanh & Vạch đo âm lượng (AudioContext)
-        let audioCtx, analyser, microphone, stream;
-        let animId;
+        let audioCtx, analyser, microphone, stream, animId;
 
         function notify(message, color) {
             statusText.innerHTML = message;
             statusText.style.color = color;
         }
 
+        // Lưu vết chữ để làm tính năng Khôi phục (Undo)
+        function saveStateForUndo() {
+            undoHistory = resultText.value;
+            btnUndo.style.display = 'flex'; // Hiện nút khôi phục
+        }
+
         resultText.addEventListener('input', () => {
             final_transcript = resultText.value;
         });
 
-        // Hàm kích hoạt Lọc ồn + Kích âm + Đo vạch sóng
+        // Xử lý Micro & Vạch đo âm thanh
         async function setupAudioFilter() {
             try {
-                // Kích hoạt các tính năng nâng cao phần cứng Micro
                 stream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: { 
-                        echoCancellation: true, // Chống vang
-                        noiseSuppression: true, // Lọc tiếng ồn môi trường
-                        autoGainControl: true   // TỰ ĐỘNG TĂNG ÂM LƯỢNG khi nói nhỏ
-                    } 
+                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } 
                 });
 
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -195,24 +222,16 @@
                 function drawMeter() {
                     analyser.getByteFrequencyData(dataArray);
                     let sum = 0;
-                    for (let i = 0; i < bufferLength; i++) {
-                        sum += dataArray[i];
-                    }
+                    for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
                     let average = sum / bufferLength;
-                    // Quy đổi mức độ âm thanh ra % chiều rộng thanh đo
                     let level = Math.min(100, Math.max(0, (average - 10) * 2.5));
                     meterBar.style.width = level + '%';
 
-                    if (!isManuallyStopped) {
-                        animId = requestAnimationFrame(drawMeter);
-                    } else {
-                        meterBar.style.width = '0%';
-                    }
+                    if (!isManuallyStopped) animId = requestAnimationFrame(drawMeter);
+                    else meterBar.style.width = '0%';
                 }
                 drawMeter();
-            } catch (err) {
-                console.log("Không thể khởi tạo đo vạch âm lượng: ", err);
-            }
+            } catch (err) { console.log("Không khởi tạo được vạch âm lượng:", err); }
         }
 
         function stopAudioFilter() {
@@ -237,7 +256,7 @@
                 resultText.classList.add('listening-glow');
                 btnStart.disabled = true;
                 btnStop.disabled = false;
-                setupAudioFilter(); // Bật bộ lọc ồn và vạch đo âm lượng
+                setupAudioFilter();
             };
 
             recognition.onresult = function(event) {
@@ -261,8 +280,7 @@
 
             recognition.onend = function() {
                 if (!isManuallyStopped) {
-                    try { recognition.start(); } 
-                    catch (e) { console.error(e); }
+                    try { recognition.start(); } catch (e) {}
                 } else {
                     notify("Đã ngừng. Bạn có thể sửa hoặc bấm Copy.", "#666");
                     resultText.classList.remove('listening-glow');
@@ -287,7 +305,66 @@
             btnStart.disabled = true;
         }
 
-        // Xử lý các nút bấm
+        // --- XỬ LÝ CÁC NÚT BẤM XÓA VÀ CHỨC NĂNG ---
+
+        // 1. Nút X Đỏ - Xóa Tất Cả
+        btnClearAll.addEventListener('click', () => {
+            if (resultText.value.trim() !== '') {
+                saveStateForUndo();
+                resultText.value = '';
+                final_transcript = '';
+                notify("Đã xóa hết chữ. (Bấm 'Khôi phục' ở dưới nếu bấm nhầm)", "#D32F2F");
+            }
+        });
+
+        // 2. Nút Xóa 1 từ
+        btnDeleteWord.addEventListener('click', () => {
+            let text = resultText.value.trimEnd();
+            if (text.length > 0) {
+                saveStateForUndo();
+                let lastSpaceIndex = text.lastIndexOf(' ');
+                if (lastSpaceIndex !== -1) {
+                    resultText.value = text.substring(0, lastSpaceIndex) + ' ';
+                } else {
+                    resultText.value = ''; // Nếu chỉ có 1 từ thì xóa sạch
+                }
+                final_transcript = resultText.value;
+                notify("Đã xóa 1 từ vừa rồi.", "#37474F");
+            }
+        });
+
+        // 3. Nút Xóa câu cuối
+        btnDeleteSentence.addEventListener('click', () => {
+            let text = resultText.value.trimEnd();
+            if (text.length > 0) {
+                saveStateForUndo();
+                // Tìm vị trí dấu chấm, dấu chấm hỏi, dấu chấm cảm hoặc xuống dòng gần nhất
+                let lastDelim = Math.max(
+                    text.lastIndexOf('.'), 
+                    text.lastIndexOf('?'), 
+                    text.lastIndexOf('!'),
+                    text.lastIndexOf('\n')
+                );
+
+                if (lastDelim !== -1 && lastDelim < text.length - 1) {
+                    resultText.value = text.substring(0, lastDelim + 1) + ' ';
+                } else {
+                    resultText.value = ''; // Nếu không có dấu ngắt câu thì xóa cả đoạn
+                }
+                final_transcript = resultText.value;
+                notify("Đã xóa câu cuối cùng vừa nói.", "#263238");
+            }
+        });
+
+        // 4. Nút Khôi Phục (Undo) khi lỡ xóa nhầm
+        btnUndo.addEventListener('click', () => {
+            resultText.value = undoHistory;
+            final_transcript = undoHistory;
+            btnUndo.style.display = 'none'; // Ẩn lại nút sau khi lấy xong
+            notify("Đã khôi phục lại chữ thành công!", "#4CAF50");
+        });
+
+        // Các nút chính khác
         btnStart.addEventListener('click', () => {
             isManuallyStopped = false;
             final_transcript = resultText.value;
@@ -306,21 +383,12 @@
             resultText.select();
             document.execCommand('copy');
             window.getSelection().removeAllRanges(); 
-            
             notify("Đã copy chữ thành công!", "#2196F3");
-            setTimeout(() => {
-                if(!isManuallyStopped) notify("Đang nghe...", "#4CAF50");
-                else notify("Sẵn sàng.", "#666");
-            }, 3000);
         });
 
         btnSave.addEventListener('click', () => {
             localStorage.setItem('voiceDraftForElderly', resultText.value);
             notify("Đã lưu an toàn vào máy!", "#FF9800");
-            setTimeout(() => {
-                if(!isManuallyStopped) notify("Đang nghe...", "#4CAF50");
-                else notify("Sẵn sàng.", "#666");
-            }, 3000);
         });
 
         btnOpen.addEventListener('click', () => {
@@ -328,16 +396,13 @@
             if (savedDraft) {
                 resultText.value = savedDraft;
                 final_transcript = savedDraft;
-                notify("Đã mở bản thảo cũ lên thành công.", "#9C27B0");
+                notify("Đã mở bản thảo cũ thành công.", "#9C27B0");
             } else {
-                notify("Chưa có bản thảo nào được lưu trước đây.", "#E57373");
+                notify("Chưa có bản thảo nào được lưu.", "#E57373");
             }
-            setTimeout(() => {
-                if(!isManuallyStopped) notify("Đang nghe...", "#4CAF50");
-                else notify("Sẵn sàng.", "#666");
-            }, 3000);
         });
 
+        // Tự động lưu ngầm mỗi 5 giây
         setInterval(() => {
             if (resultText.value.trim() !== "") {
                 localStorage.setItem('voiceDraftForElderly', resultText.value);
