@@ -12,7 +12,7 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            padding: 1.2rem 1rem; 
+            padding: 1rem; 
             color: #2C3539; 
             margin: 0;
             min-height: 100vh;
@@ -29,7 +29,7 @@
         
         h1 {
             text-align: center; 
-            font-size: 1.8rem; 
+            font-size: 1.7rem; 
             margin-top: 0;
             margin-bottom: 0.3rem;
             color: #2C3539;
@@ -40,13 +40,13 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-bottom: 0.6rem;
-            min-height: 2.2rem;
+            margin-bottom: 0.5rem;
+            min-height: 2rem;
         }
 
         .status-dot {
-            width: 14px;
-            height: 14px;
+            width: 13px;
+            height: 13px;
             border-radius: 50%;
             background-color: #B0BEC5;
             transition: all 0.3s ease;
@@ -65,42 +65,46 @@
         }
 
         .status-text { 
-            font-size: 1.1rem; 
+            font-size: 1.05rem; 
             color: #666; 
             font-style: italic; 
         }
 
-        /* Thanh phím tắt Dấu & Định dạng 1-Chạm */
-        .quick-punctuation-bar {
-            display: flex;
-            flex-wrap: wrap;
+        /* Khung nút Dấu 1-Chạm thiết kế cực tiện */
+        .punc-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
             gap: 6px;
-            margin-bottom: 8px;
-            justify-content: center;
+            margin-bottom: 10px;
         }
 
         .btn-punc {
-            background-color: #E0EFC1;
+            background-color: #E8F5E9;
             color: #1B5E20;
             border: 1px solid #A5D6A7;
             border-radius: 8px;
-            padding: 8px 14px;
-            font-size: 1.1rem;
+            padding: 8px 4px;
+            font-size: 1.05rem;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
             transition: all 0.15s ease;
         }
 
         .btn-punc:active {
-            background-color: #A5D6A7;
-            transform: scale(0.96);
+            background-color: #C8E6C9;
+            transform: scale(0.95);
+        }
+
+        .btn-punc-wide {
+            grid-column: span 1;
         }
 
         .text-box { 
             width: 100%; 
             flex-grow: 1;
-            min-height: 240px;
+            min-height: 250px;
             font-size: 28px; 
             line-height: 1.6; 
             padding: 1.2rem; 
@@ -122,10 +126,11 @@
             box-shadow: 0 0 18px rgba(0, 168, 107, 0.35) !important; 
         }
         
+        /* Hàng nút xóa chia 2 bên Trái / Phải */
         .controls-edit {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
             margin-top: 12px;
         }
 
@@ -161,17 +166,17 @@
         .btn-open { background-color: #BA68C8; color: white; }
 
         .btn-delete-word { background-color: #ECEFF1; color: #37474F; border: 1px solid #CFD8DC; }
-        .btn-delete-chunk { background-color: #CFD8DC; color: #263238; }
         .btn-clear-all { background-color: #D32F2F; color: white; } 
         .btn-undo { background-color: #78909C; color: white; }
 
         @media (max-width: 600px) {
             h1 { font-size: 1.4rem; }
             .text-box { font-size: 24px; padding: 0.8rem; }
-            .controls-main, .controls-edit { grid-template-columns: 1fr; gap: 8px; }
+            .punc-grid { grid-template-columns: repeat(5, 1fr); gap: 4px; }
+            .btn-punc { font-size: 0.95rem; padding: 7px 2px; }
+            .controls-main { grid-template-columns: 1fr; gap: 8px; }
             .btn-start { grid-column: auto; } 
             button { padding: 14px 10px; font-size: 1.15rem; }
-            .btn-punc { padding: 6px 10px; font-size: 1rem; }
         }
     </style>
 </head>
@@ -184,25 +189,26 @@
             <div id="statusText" class="status-text">Sẵn sàng. Hãy bấm "Bắt đầu nói".</div>
         </div>
 
-        <!-- Thanh phím tắt Dấu & Định dạng 1-Chạm cho người lớn tuổi -->
-        <div class="quick-punctuation-bar">
+        <!-- Khung Dấu 1-Chạm thiết kế 2 hàng vuông vắn -->
+        <div class="punc-grid">
             <button class="btn-punc" onclick="insertSymbol('.')">. Chấm</button>
             <button class="btn-punc" onclick="insertSymbol(',')">, Phẩy</button>
             <button class="btn-punc" onclick="insertSymbol('?')">? Hỏi</button>
             <button class="btn-punc" onclick="insertSymbol('!')">! Than</button>
             <button class="btn-punc" onclick="insertSymbol(':')">: Hai chấm</button>
+            
             <button class="btn-punc" onclick="insertSymbol('...')">... Ba chấm</button>
             <button class="btn-punc" onclick="insertSymbol('\"')">" "</button>
-            <button class="btn-punc" onclick="insertSymbol('\n- ')">- Gạch dòng</button>
-            <button class="btn-punc" onclick="insertSymbol('\n')">↵ Xuống dòng</button>
+            <button class="btn-punc" onclick="insertSymbol('()')">( )</button>
+            <button class="btn-punc btn-punc-wide" onclick="insertSymbol('\n- ')">- Gạch dòng</button>
+            <button class="btn-punc btn-punc-wide" onclick="insertSymbol('\n')">↵ Xuống dòng</button>
         </div>
 
         <textarea id="resultText" class="text-box" placeholder="Chữ sẽ hiện ra ngay khi bạn nói..."></textarea>
         
-        <!-- Nhóm nút xóa -->
+        <!-- Hàng nút Xóa đơn giản: Trái (Xóa 1 từ) - Phải (Xóa tất cả) -->
         <div class="controls-edit">
             <button id="btnDeleteWord" class="btn-delete-word"><i class="fas fa-backspace"></i> Xóa 1 từ</button>
-            <button id="btnDeleteChunk" class="btn-delete-chunk"><i class="fas fa-outdent"></i> Xóa đoạn vừa nói</button>
             <button id="btnClearAll" class="btn-clear-all"><i class="fas fa-times-circle"></i> Xóa tất cả (X)</button>
         </div>
 
@@ -228,7 +234,6 @@
         const btnOpen = document.getElementById('btnOpen');
         const fileInput = document.getElementById('fileInput');
         const btnDeleteWord = document.getElementById('btnDeleteWord');
-        const btnDeleteChunk = document.getElementById('btnDeleteChunk');
         const btnClearAll = document.getElementById('btnClearAll');
         const btnUndo = document.getElementById('btnUndo');
         const statusText = document.getElementById('statusText');
@@ -236,7 +241,6 @@
 
         let isManuallyStopped = true;
         let sessionBaseText = ''; 
-        let phraseHistory = [];  
         let undoHistory = ''; 
 
         function notify(message, color) {
@@ -244,94 +248,31 @@
             statusText.style.color = color || "#666";
         }
 
-        // =========================================================================
-        // DANH SÁCH BẢO VỆ TỪ GHÉP THỰC TẾ (TRÁNH LỖI "Chấm dứt" -> " . ")
-        // =========================================================================
-        const protectedPhrases = [
-            "chấm dứt", "chấm điểm", "chấm mắm", "chấm thi", "chấm công", "chấm tròn", "chấm phá", "chấm muối",
-            "phẩy tay", "phẩy áo", "phẩy khuấy",
-            "hỏi thăm", "hỏi chuyện", "câu hỏi", "hỏi đáp", "hỏi han",
-            "xuất hàng", "xuống núi", "xuống làng", "gạch tên", "gạch sổ"
-        ];
-
-        function applySmartVietnameseFormatting(text) {
+        // TỰ ĐỘNG VIẾT HOA CHỮ ĐẦU CÂU & SAU DẤU NGẮT
+        function autoCapitalize(text) {
             if (!text) return text;
-
-            let str = text;
-
-            // LỚP 1: TẠM THỜI BẢO VỆ CÁC CỤM TỪ GHÉP THỰC TẾ
-            let placeholders = {};
-            protectedPhrases.forEach((phrase, index) => {
-                let tag = `__PROT_${index}__`;
-                let regex = new RegExp(`(?<!\\p{L})${phrase}(?!\\p{L})`, 'gui');
-                if (regex.test(str)) {
-                    placeholders[tag] = phrase;
-                    str = str.replace(regex, tag);
-                }
-            });
-
-            // LỚP 2: ĐỊNH DẠNG CẤU TRÚC & DẤU CÂU
-
-            // Định dạng trang
-            str = str.replace(/(?<!\p{L})(dấu gạch đầu dòng|gạch đầu dòng|gạch đầu rồng)(?!\p{L})/gui, "\n- ");
-            str = str.replace(/(?<!\p{L})(thụt vào đầu dòng|thụt đầu dòng|thụt lùi vào)(?!\p{L})/gui, "\n    ");
-            str = str.replace(/(?<!\p{L})(xuống dòng mới|xuống hàng mới|xuống dòng|xuống hàng|sang dòng)(?!\p{L})/gui, "\n");
-
-            // Ngoặc đơn & Ngoặc kép
-            str = str.replace(/(?<!\p{L})(mở ngoặc kép|mở kép)(?!\p{L})/gui, ' "');
-            str = str.replace(/(?<!\p{L})(đóng ngoặc kép|đóng kép)(?!\p{L})/gui, '" ');
-            str = str.replace(/(?<!\p{L})(mở ngoặc đơn|mở ngoặc)(?!\p{L})/gui, ' (');
-            str = str.replace(/(?<!\p{L})(đóng ngoặc đơn|đóng ngoặc)(?!\p{L})/gui, ') ');
-
-            // Dấu câu
-            str = str.replace(/(?<!\p{L})(dấu ba chấm|ba chấm|chấm chấm chấm)(?!\p{L})/gui, "...");
-            str = str.replace(/(?<!\p{L})(dấu hai chấm|hai chấm)(?!\p{L})/gui, ":");
-            str = str.replace(/(?<!\p{L})(dấu chấm phẩy|chấm phẩy)(?!\p{L})/gui, ";");
-            str = str.replace(/(?<!\p{L})(dấu chấm hỏi|chấm hỏi)(?!\p{L})/gui, "?");
-            str = str.replace(/(?<!\p{L})(dấu chấm cảm|dấu chấm than|chấm cảm|chấm than)(?!\p{L})/gui, "!");
-            str = str.replace(/(?<!\p{L})(chấm hết|dấu chấm|chấm)(?!\p{L})/gui, ".");
-            str = str.replace(/(?<!\p{L})(dấu phẩy|dấu phảy|phẩy|phảy)(?!\p{L})/gui, ",");
-            str = str.replace(/(?<!\p{L})(dấu gạch ngang|dấu gạch nối|gạch ngang|gạch nối)(?!\p{L})/gui, " - ");
-
-            // Chuẩn hóa khoảng cách xung quanh dấu
-            str = str.replace(/\s+([\.,:;!\?\)\"])/g, "$1");
-            str = str.replace(/([\.,:;!\?\)])([^\s\n\.,:;!\?\)\"])/g, "$1 $2");
-            str = str.replace(/\(\s+/g, "(");
-            str = str.replace(/\"\s+/g, '"');
-
-            // Viết hoa đại từ xưng hô độc lập
-            const honorificsRegex = /(?<!\p{L})(anh|chị|cô|chú|bác|ông|bà|thầy|cậu|dì|mợ|cháu|em)(?!\p{L})/gui;
-            str = str.replace(honorificsRegex, function(match) {
-                return match.charAt(0).toUpperCase() + match.slice(1).toLowerCase();
-            });
-
-            // Viết hoa chữ cái đầu tiên sau ngắt câu/xuống dòng
-            str = str.charAt(0).toUpperCase() + str.slice(1);
-            str = str.replace(/([\.\?!\n]\s*|\n-\s*|\n\s{4}\s*|\.\.\.\s*)([a-zàáảãạăắằẳẵặâấầẩẫậeéèẻẽẹêếềểễệiíìỉĩịoóòỏõọôốồổỗộơớờởỡợuúùủũụưứừửữựyýỳỷỹỵdđ])/gi, function(match, p1, p2) {
+            let str = text.charAt(0).toUpperCase() + text.slice(1);
+            return str.replace(/([\.\?!\n]\s*|\n-\s*)([a-zàáảãạăắằẳẵặâấầẩẫậeéèẻẽẹêếềểễệiíìỉĩịoóòỏõọôốồổỗộơớờởỡợuúùủũụưứừửữựyýỳỷỹỵdđ])/gi, function(m, p1, p2) {
                 return p1 + p2.toUpperCase();
             });
-
-            // LỚP 3: KHÔI PHỤC CÁC CỤM TỪ GHÉP NGUYÊN BẢN
-            Object.keys(placeholders).forEach(tag => {
-                let original = placeholders[tag];
-                str = str.replace(new RegExp(tag, 'g'), original);
-            });
-
-            return str;
         }
 
-        // HÀM BẤM CHÈN DẤU 1-CHẠM
+        // CHÈN DẤU 1-CHẠM THÔNG MINH
         function insertSymbol(symbol) {
             saveStateForUndo();
             let text = resultText.value;
-            let spaceNeeded = (text.length > 0 && !text.endsWith(' ') && !text.endsWith('\n') && symbol !== '.' && symbol !== ',' && symbol !== '?' && symbol !== '!' && symbol !== ':' && symbol !== '...');
-            
-            if (symbol === '.' || symbol === ',' || symbol === '?' || symbol === '!' || symbol === ':' || symbol === '...') {
+
+            if (symbol === '()') {
+                text = text.trimEnd() + ' ()';
+            } else if (symbol === '"') {
+                text = text.trimEnd() + ' ""';
+            } else if (symbol === '.' || symbol === ',' || symbol === '?' || symbol === '!' || symbol === ':' || symbol === '...') {
                 text = text.trimEnd() + symbol + ' ';
             } else {
-                text += (spaceNeeded ? ' ' : '') + symbol;
+                text += symbol;
             }
 
+            text = autoCapitalize(text);
             resultText.value = text;
             sessionBaseText = text;
             localStorage.setItem('voiceDraftForElderly', text);
@@ -339,58 +280,7 @@
             notify(`Đã chèn ký hiệu: <b>${symbol.replace('\n', 'Xuống dòng')}</b>`, "#00A86B");
         }
 
-        // LỌC TRÙNG LẶP ĐIỆN THOẠI
-        function getCleanSessionTranscript(results) {
-            let combined = "";
-
-            for (let i = 0; i < results.length; ++i) {
-                let transcript = results[i][0].transcript.trim();
-                if (!transcript) continue;
-
-                transcript = transcript.replace(/\s+/g, ' ');
-
-                if (!combined) {
-                    combined = transcript;
-                    continue;
-                }
-
-                let combinedLower = combined.toLowerCase();
-                let transcriptLower = transcript.toLowerCase();
-
-                if (transcriptLower.startsWith(combinedLower)) {
-                    combined = transcript;
-                    continue;
-                }
-
-                if (combinedLower.startsWith(transcriptLower) || combinedLower.endsWith(transcriptLower) || combinedLower.includes(transcriptLower)) {
-                    continue;
-                }
-
-                let wordsCombined = combined.split(' ');
-                let wordsTranscript = transcript.split(' ');
-                let merged = false;
-
-                for (let overlapLen = Math.min(wordsCombined.length, wordsTranscript.length); overlapLen > 0; overlapLen--) {
-                    let suffix = wordsCombined.slice(wordsCombined.length - overlapLen).join(' ').toLowerCase();
-                    let prefix = wordsTranscript.slice(0, overlapLen).join(' ').toLowerCase();
-
-                    if (suffix === prefix) {
-                        let remaining = wordsTranscript.slice(overlapLen).join(' ');
-                        if (remaining) {
-                            combined = combined + ' ' + remaining;
-                        }
-                        merged = true;
-                        break;
-                    }
-                }
-
-                if (merged) continue;
-                combined = combined + ' ' + transcript;
-            }
-
-            return combined;
-        }
-
+        // Tự động khôi phục bài viết cũ
         window.addEventListener('DOMContentLoaded', () => {
             const savedDraft = localStorage.getItem('voiceDraftForElderly');
             if (savedDraft && savedDraft.trim() !== '') {
@@ -407,9 +297,7 @@
 
         function resetMicrophoneIfListening() {
             if (!isManuallyStopped && recognition) {
-                try {
-                    recognition.abort();
-                } catch(e) { console.log(e); }
+                try { recognition.abort(); } catch(e) {}
             }
         }
 
@@ -419,6 +307,7 @@
             resetMicrophoneIfListening();
         });
 
+        // AI THU ÂM CHỮ THUẦN TÚY (ĐÃ BỎ HOÀN TOÀN TÍNH NĂNG NHẬN DIỆN DẤU BẰNG GIỌNG NÓI - CHỐNG LẶP CHỮ 100%)
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
 
@@ -439,30 +328,43 @@
             };
 
             recognition.onresult = function(event) {
-                let rawSessionText = getCleanSessionTranscript(event.results);
+                let finalPart = '';
+                let interimPart = '';
 
-                let fullText = sessionBaseText;
-                if (rawSessionText !== '') {
-                    if (fullText !== '' && !fullText.endsWith(' ') && !fullText.endsWith('\n')) {
-                        fullText += ' ';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalPart += event.results[i][0].transcript + ' ';
+                    } else {
+                        interimPart += event.results[i][0].transcript;
                     }
-                    fullText += rawSessionText;
                 }
 
-                let formattedText = applySmartVietnameseFormatting(fullText);
+                if (finalPart) {
+                    let cleanFinal = finalPart.trim();
+                    if (sessionBaseText && !sessionBaseText.endsWith(' ') && !sessionBaseText.endsWith('\n')) {
+                        sessionBaseText += ' ';
+                    }
+                    sessionBaseText += cleanFinal;
+                }
 
-                resultText.value = formattedText;
+                let current = sessionBaseText;
+                if (interimPart) {
+                    if (current && !current.endsWith(' ') && !current.endsWith('\n')) {
+                        current += ' ';
+                    }
+                    current += interimPart;
+                }
+
+                current = autoCapitalize(current);
+                resultText.value = current;
                 resultText.scrollTop = resultText.scrollHeight;
-                localStorage.setItem('voiceDraftForElderly', formattedText);
+                localStorage.setItem('voiceDraftForElderly', current);
             };
 
             recognition.onend = function() {
                 sessionBaseText = resultText.value;
 
                 if (!isManuallyStopped) {
-                    if (sessionBaseText.trim() !== '') {
-                        phraseHistory.push(sessionBaseText);
-                    }
                     try { recognition.start(); } catch (e) {}
                 } else {
                     notify("Đã ngừng. Bạn có thể sửa hoặc bấm Copy.", "#666");
@@ -488,14 +390,12 @@
             btnStart.disabled = true;
         }
 
-        // --- CÁC NÚT XÓA THÔNG MINH ---
-
+        // XÓA 1 TỪ & XÓA TẤT CẢ
         btnClearAll.addEventListener('click', () => {
             if (resultText.value.trim() !== '') {
                 saveStateForUndo();
                 resultText.value = '';
                 sessionBaseText = '';
-                phraseHistory = [];
                 localStorage.removeItem('voiceDraftForElderly');
                 resetMicrophoneIfListening();
                 notify("Đã xóa sạch chữ. (Bấm 'Khôi phục' ở dưới nếu bấm nhầm)", "#D32F2F");
@@ -516,24 +416,6 @@
             }
         });
 
-        btnDeleteChunk.addEventListener('click', () => {
-            saveStateForUndo();
-            if (phraseHistory.length > 0) {
-                let prevText = phraseHistory.pop();
-                resultText.value = prevText;
-                sessionBaseText = prevText;
-            } else if (resultText.value.trim() !== '') {
-                let words = resultText.value.trim().split(/\s+/);
-                words.splice(-5);
-                let newText = words.join(' ');
-                resultText.value = newText;
-                sessionBaseText = newText;
-            }
-            localStorage.setItem('voiceDraftForElderly', resultText.value);
-            resetMicrophoneIfListening();
-            notify("Đã xóa đoạn vừa nói.", "#263238");
-        });
-
         btnUndo.addEventListener('click', () => {
             resultText.value = undoHistory;
             sessionBaseText = undoHistory;
@@ -543,8 +425,7 @@
             notify("Đã khôi phục lại chữ thành công!", "#00A86B");
         });
 
-        // --- TẢI & MỞ BẢN THẢO VỚI NGÀY GIỜ PHÚT ---
-
+        // TẢI & MỞ BẢN THẢO VỚI NGÀY GIỜ PHÚT
         btnSave.addEventListener('click', () => {
             const text = resultText.value;
             if (!text.trim()) {
@@ -578,8 +459,7 @@
                 reader.onload = function(evt) {
                     resultText.value = evt.target.result;
                     sessionBaseText = evt.target.result;
-                    phraseHistory = [sessionBaseText];
-                    localStorage.setItem('voiceDraftForElderly', sessionBaseText);
+                    localStorage.setItem('voiceDraftForElderly', evt.target.result);
                     notify("Đã mở nội dung bản thảo lên thành công!", "#BA68C8");
                 };
                 reader.readAsText(file, 'UTF-8');
