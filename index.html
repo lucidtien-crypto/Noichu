@@ -203,57 +203,50 @@
             statusText.style.color = color || "#666";
         }
 
-        // =========================================================================
-        // BỘ XỬ LÝ ĐỊNH DẠNG VIỆT NAM THÔNG MINH (NÂNG CẤP TOÀN DIỆN DẤU CÂU)
-        // =========================================================================
+        // BỘ XỬ LÝ ĐỊNH DẠNG VIỆT NAM THÔNG MINH (UNICODE WORD BOUNDARY STRICT)
         function applySmartVietnameseFormatting(text) {
             if (!text) return text;
 
             let str = text;
 
             // 1. Định dạng cấu trúc trang (Lệnh dài trước)
-            str = str.replace(/(\b)(dấu gạch đầu dòng|gạch đầu dòng)(\b)/gi, "\n- ");
-            str = str.replace(/(\b)(thụt vào đầu dòng|thụt đầu dòng)(\b)/gi, "\n    ");
-            str = str.replace(/(\b)(xuống dòng mới|xuống hàng mới|xuống dòng|xuống hàng|sang dòng)(\b)/gi, "\n");
+            str = str.replace(/(?<!\p{L})(dấu gạch đầu dòng|gạch đầu dòng)(?!\p{L})/gui, "\n- ");
+            str = str.replace(/(?<!\p{L})(thụt vào đầu dòng|thụt đầu dòng)(?!\p{L})/gui, "\n    ");
+            str = str.replace(/(?<!\p{L})(xuống dòng mới|xuống hàng mới|xuống dòng|xuống hàng|sang dòng)(?!\p{L})/gui, "\n");
 
             // 2. Định dạng Ngoặc đơn & Ngoặc kép
-            str = str.replace(/(\b)(mở ngoặc kép|mở kép)(\b)/gi, ' "');
-            str = str.replace(/(\b)(đóng ngoặc kép|đóng kép)(\b)/gi, '" ');
-            str = str.replace(/(\b)(mở ngoặc đơn|mở ngoặc)(\b)/gi, ' (');
-            str = str.replace(/(\b)(đóng ngoặc đơn|đóng ngoặc)(\b)/gi, ') ');
+            str = str.replace(/(?<!\p{L})(mở ngoặc kép|mở kép)(?!\p{L})/gui, ' "');
+            str = str.replace(/(?<!\p{L})(đóng ngoặc kép|đóng kép)(?!\p{L})/gui, '" ');
+            str = str.replace(/(?<!\p{L})(mở ngoặc đơn|mở ngoặc)(?!\p{L})/gui, ' (');
+            str = str.replace(/(?<!\p{L})(đóng ngoặc đơn|đóng ngoặc)(?!\p{L})/gui, ') ');
 
-            // 3. Chuyển đổi Dấu câu nâng cao
-            str = str.replace(/(\b)(dấu ba chấm|ba chấm|chấm chấm chấm)(\b)/gi, "...");
-            str = str.replace(/(\b)(dấu hai chấm|hai chấm)(\b)/gi, ":");
-            str = str.replace(/(\b)(dấu chấm phẩy|chấm phẩy)(\b)/gi, ";");
-            str = str.replace(/(\b)(dấu chấm hỏi|chấm hỏi)(\b)/gi, "?");
-            str = str.replace(/(\b)(dấu chấm cảm|dấu chấm than|chấm cảm|chấm than)(\b)/gi, "!");
-            str = str.replace(/(\b)(chấm hết|dấu chấm|chấm)(\b)/gi, ".");
-            str = str.replace(/(\b)(dấu phẩy|dấu phảy|phẩy|phảy)(\b)/gi, ",");
-            str = str.replace(/(\b)(dấu gạch ngang|dấu gạch nối|gạch ngang|gạch nối)(\b)/gi, " - ");
+            // 3. Dấu câu nâng cao
+            str = str.replace(/(?<!\p{L})(dấu ba chấm|ba chấm|chấm chấm chấm)(?!\p{L})/gui, "...");
+            str = str.replace(/(?<!\p{L})(dấu hai chấm|hai chấm)(?!\p{L})/gui, ":");
+            str = str.replace(/(?<!\p{L})(dấu chấm phẩy|chấm phẩy)(?!\p{L})/gui, ";");
+            str = str.replace(/(?<!\p{L})(dấu chấm hỏi|chấm hỏi)(?!\p{L})/gui, "?");
+            str = str.replace(/(?<!\p{L})(dấu chấm cảm|dấu chấm than|chấm cảm|chấm than)(?!\p{L})/gui, "!");
+            str = str.replace(/(?<!\p{L})(chấm hết|dấu chấm|chấm)(?!\p{L})/gui, ".");
+            str = str.replace(/(?<!\p{L})(dấu phẩy|dấu phảy|phẩy|phảy)(?!\p{L})/gui, ",");
+            str = str.replace(/(?<!\p{L})(dấu gạch ngang|dấu gạch nối|gạch ngang|gạch nối)(?!\p{L})/gui, " - ");
 
-            // 4. Dấu toán học (Chỉ đổi khi nói rõ từ "dấu")
-            str = str.replace(/(\b)(dấu lớn hơn)(\b)/gi, " > ");
-            str = str.replace(/(\b)(dấu nhỏ hơn)(\b)/gi, " < ");
+            // 4. Dấu toán học
+            str = str.replace(/(?<!\p{L})(dấu lớn hơn)(?!\p{L})/gui, " > ");
+            str = str.replace(/(?<!\p{L})(dấu nhỏ hơn)(?!\p{L})/gui, " < ");
 
             // 5. Chuẩn hóa khoảng cách xung quanh dấu
-            // Xóa khoảng trắng đứng TRƯỚC dấu câu
             str = str.replace(/\s+([\.,:;!\?\)\"])/g, "$1");
-
-            // Đảm bảo CÓ 1 khoảng trắng đứng SAU dấu câu (nếu sau đó không phải là xuống dòng hoặc ngoặc đóng)
             str = str.replace(/([\.,:;!\?\)])([^\s\n\.,:;!\?\)\"])/g, "$1 $2");
-
-            // Xóa khoảng trắng sau dấu mở ngoặc
             str = str.replace(/\(\s+/g, "(");
             str = str.replace(/\"\s+/g, '"');
 
-            // 6. Viết hoa đại từ xưng hô Việt Nam
-            const honorificsRegex = /\b(anh|chị|cô|chú|bác|ông|bà|thầy|cậu|dì|mợ|cháu|em)\b/gi;
+            // 6. Viết hoa đại từ xưng hô (Chỉ áp dụng khi từ ĐỨNG ĐỘC LẬP HOÀN TOÀN)
+            const honorificsRegex = /(?<!\p{L})(anh|chị|cô|chú|bác|ông|bà|thầy|cậu|dì|mợ|cháu|em)(?!\p{L})/gui;
             str = str.replace(honorificsRegex, function(match) {
                 return match.charAt(0).toUpperCase() + match.slice(1).toLowerCase();
             });
 
-            // 7. Tự động viết hoa chữ cái đầu tiên sau ngắt câu/xuống dòng
+            // 7. Viết hoa chữ cái đầu tiên sau ngắt câu/xuống dòng
             str = str.charAt(0).toUpperCase() + str.slice(1);
             str = str.replace(/([\.\?!\n]\s*|\n-\s*|\n\s{4}\s*|\.\.\.\s*)([a-zàáảãạăắằẳẵặâấầẩẫậeéèẻẽẹêếềểễệiíìỉĩịoóòỏõọôốồổỗộơớờởỡợuúùủũụưứừửữựyýỳỷỹỵdđ])/gi, function(match, p1, p2) {
                 return p1 + p2.toUpperCase();
@@ -262,7 +255,7 @@
             return str;
         }
 
-        // THUẬT TOÁN ĐẶC TRỊ LỖI LẶP CHỮ TRÊN ĐIỆN THOẠI
+        // LỌC TRÙNG LẶP TRÊN ĐIỆN THOẠI
         function getCleanSessionTranscript(results) {
             let combined = "";
 
@@ -314,7 +307,6 @@
             return combined;
         }
 
-        // Tự động khôi phục bài làm dở khi mở lại trang
         window.addEventListener('DOMContentLoaded', () => {
             const savedDraft = localStorage.getItem('voiceDraftForElderly');
             if (savedDraft && savedDraft.trim() !== '') {
@@ -343,7 +335,6 @@
             resetMicrophoneIfListening();
         });
 
-        // Khởi tạo AI Nhận diện giọng nói
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
 
