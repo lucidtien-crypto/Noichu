@@ -115,14 +115,12 @@
         button:active { transform: translateY(2px); }
         button:disabled { opacity: 0.4; cursor: not-allowed; }
         
-        /* Nút micro to nhất */
         .btn-start { background-color: #4CAF50; color: white; grid-column: 1 / -1; font-size: 1.4rem; padding: 18px 15px;} 
         .btn-stop { background-color: #E57373; color: white; }
         .btn-copy { background-color: #64B5F6; color: white; }
         .btn-save { background-color: #FFB74D; color: #333; }
         .btn-open { background-color: #BA68C8; color: white; }
 
-        /* Nút nhóm Xóa */
         .btn-delete-word { background-color: #ECEFF1; color: #37474F; border: 1px solid #CFD8DC; }
         .btn-delete-chunk { background-color: #CFD8DC; color: #263238; }
         .btn-clear-all { background-color: #D32F2F; color: white; } 
@@ -155,17 +153,16 @@
             <button id="btnClearAll" class="btn-clear-all"><i class="fas fa-times-circle"></i> Xóa tất cả (X)</button>
         </div>
 
-        <!-- Nhóm nút chức năng chính -->
+        <!-- Nhóm nút chức năng chính (Đã cập nhật tên gọi thuần Việt) -->
         <div class="controls-main">
             <button id="btnStart" class="btn-start"><i class="fas fa-microphone"></i> Bắt đầu nói</button>
             <button id="btnStop" class="btn-stop" disabled><i class="fas fa-stop-circle"></i> Ngừng lại</button>
             <button id="btnCopy" class="btn-copy"><i class="fas fa-copy"></i> Copy chữ</button>
-            <button id="btnSave" class="btn-save"><i class="fas fa-file-download"></i> Tải file .txt</button>
-            <button id="btnOpen" class="btn-open"><i class="fas fa-folder-open"></i> Mở file .txt</button>
+            <button id="btnSave" class="btn-save"><i class="fas fa-file-download"></i> Tải bản thảo về</button>
+            <button id="btnOpen" class="btn-open"><i class="fas fa-folder-open"></i> Mở bản thảo đã lưu</button>
             <button id="btnUndo" class="btn-undo" style="display: none; grid-column: 1 / -1;"><i class="fas fa-undo"></i> Khôi phục lại chữ vừa xóa</button>
         </div>
 
-        <!-- Thẻ chọn file ẩn để đọc file .txt -->
         <input type="file" id="fileInput" accept=".txt" style="display: none;">
     </div>
 
@@ -185,7 +182,7 @@
         const meterBar = document.getElementById('meterBar');
 
         let isManuallyStopped = true;
-        let spokenChunks = []; // Mảng lưu các cụm từ ngắt nghỉ khi nói
+        let phraseHistory = []; // Ngăn xếp lưu ảnh chụp nội dung trước mỗi đoạn nói
         let undoHistory = ''; 
         let audioCtx, analyser, microphone, stream, animId;
 
@@ -194,12 +191,11 @@
             statusText.style.color = color;
         }
 
-        // 1. TỰ ĐỘNG TẢI LẠI BÀI VIẾT KHI VỪA MỞ TRANG (TỰ ĐỘNG BẰNG BỘ NHỚ TRÌNH DUYỆT)
+        // Tự động mở lại bài viết làm dở khi vừa vào trang
         window.addEventListener('DOMContentLoaded', () => {
             const savedDraft = localStorage.getItem('voiceDraftForElderly');
             if (savedDraft && savedDraft.trim() !== '') {
                 resultText.value = savedDraft;
-                spokenChunks = [savedDraft]; // Khởi tạo đoạn
                 notify("Đã tự động mở lại bài viết bạn đang làm dở.", "#4CAF50");
             }
         });
@@ -210,11 +206,10 @@
         }
 
         resultText.addEventListener('input', () => {
-            spokenChunks = [resultText.value]; // Cập nhật lại nếu gõ tay
             localStorage.setItem('voiceDraftForElderly', resultText.value);
         });
 
-        // Xử lý Micro & Vạch đo âm thanh
+        // Xử lý Micro & Vạch âm thanh
         async function setupAudioFilter() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ 
@@ -274,25 +269,33 @@
                 let interim_transcript = '';
 
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    let transcriptChunk = event.results[i][0].transcript;
                     if (event.results[i].isFinal) {
-                        // Lưu riêng từng cụm nói ngắt nghỉ vào mảng spokenChunks
-                        spokenChunks.push(transcriptChunk.trim());
+                        let text = event.results[i][0].transcript.trim();
+                        if (text !== '') {
+                            // LƯU LẠI NỘI DUNG CŨ TRƯỚC KHI CỘNG THÊM TỪ MỚI (CHỐNG LỖI XÓA NHẦM)
+                            phraseHistory.push(resultText.value);
+
+                            if (resultText.value.length > 0 && !resultText.value.endsWith(' ') && !resultText.value.endsWith('\n')) {
+                                resultText.value += ' ';
+                            }
+                            text = text.charAt(0).toUpperCase() + text.slice(1);
+                            resultText.value += text;
+                        }
                     } else {
-                        interim_transcript += transcriptChunk;
+                        interim_transcript += event.results[i][0].transcript;
                     }
                 }
                 
-                // Nối các cụm từ lại với nhau
-                let fullText = spokenChunks.join(' ');
+                // Hiển thị đoạn đang nói dở
                 if (interim_transcript !== '') {
-                    fullText += (fullText ? ' ' : '') + interim_transcript;
+                    let currentFullText = resultText.value;
+                    if (currentFullText.length > 0 && !currentFullText.endsWith(' ')) {
+                        currentFullText += ' ';
+                    }
+                    resultText.value = currentFullText + interim_transcript;
                 }
 
-                resultText.value = fullText;
                 resultText.scrollTop = resultText.scrollHeight;
-                
-                // Tự động lưu ngầm ngay lập tức
                 localStorage.setItem('voiceDraftForElderly', resultText.value);
             };
 
@@ -323,20 +326,20 @@
             btnStart.disabled = true;
         }
 
-        // --- CÁC NÚT XÓA THÔNG MINH ---
+        // --- CÁC NÚT XÓA TỐI ƯU ---
 
-        // 1. Nút X Đỏ - Xóa tất cả
+        // 1. Xóa tất cả
         btnClearAll.addEventListener('click', () => {
             if (resultText.value.trim() !== '') {
                 saveStateForUndo();
                 resultText.value = '';
-                spokenChunks = [];
+                phraseHistory = [];
                 localStorage.removeItem('voiceDraftForElderly');
                 notify("Đã xóa sạch chữ. (Bấm 'Khôi phục' ở dưới nếu bấm nhầm)", "#D32F2F");
             }
         });
 
-        // 2. Nút Xóa 1 từ
+        // 2. Xóa 1 từ
         btnDeleteWord.addEventListener('click', () => {
             let text = resultText.value.trimEnd();
             if (text.length > 0) {
@@ -347,66 +350,66 @@
                 } else {
                     resultText.value = '';
                 }
-                spokenChunks = [resultText.value];
                 localStorage.setItem('voiceDraftForElderly', resultText.value);
                 notify("Đã xóa 1 từ vừa rồi.", "#37474F");
             }
         });
 
-        // 3. Nút Xóa đoạn vừa nói (THUẬT TOÁN MỚI - KHÔNG CẦN DẤU CHẤM)
+        // 3. Xóa đoạn vừa nói (THUẬT TOÁN ẢNH CHỤP THỜI GIAN - CHÍNH XÁC 100%)
         btnDeleteChunk.addEventListener('click', () => {
-            if (spokenChunks.length > 0) {
+            if (phraseHistory.length > 0) {
                 saveStateForUndo();
-                spokenChunks.pop(); // Bỏ đi cụm nói gần nhất
-                resultText.value = spokenChunks.join(' ');
+                // Lấy lại trạng thái chính xác trước khi nói câu cuối
+                resultText.value = phraseHistory.pop();
                 localStorage.setItem('voiceDraftForElderly', resultText.value);
-                notify("Đã xóa đoạn ngắt nghỉ vừa nói.", "#263238");
-            } else {
-                // Nếu gõ tay không có cụm, xóa 8 từ gần nhất
+                notify("Đã xóa đoạn vừa nói.", "#263238");
+            } else if (resultText.value.trim() !== '') {
+                saveStateForUndo();
                 let words = resultText.value.trim().split(' ');
-                if (words.length > 0) {
-                    saveStateForUndo();
-                    words.splice(-8); // Cắt 8 từ cuối
-                    resultText.value = words.join(' ');
-                    spokenChunks = [resultText.value];
-                    localStorage.setItem('voiceDraftForElderly', resultText.value);
-                    notify("Đã xóa một vài từ vừa rồi.", "#263238");
-                }
+                words.splice(-5); // Xóa 5 từ gần nhất nếu gõ tay
+                resultText.value = words.join(' ');
+                localStorage.setItem('voiceDraftForElderly', resultText.value);
+                notify("Đã xóa một vài từ vừa rồi.", "#263238");
             }
         });
 
-        // 4. Khôi phục lại
+        // 4. Khôi phục
         btnUndo.addEventListener('click', () => {
             resultText.value = undoHistory;
-            spokenChunks = [undoHistory];
             localStorage.setItem('voiceDraftForElderly', resultText.value);
             btnUndo.style.display = 'none';
             notify("Đã khôi phục lại chữ thành công!", "#4CAF50");
         });
 
-        // --- LƯU & MỞ FILE .TXT THỰC SỰ ---
+        // --- TẢI VÀ MỞ BẢN THẢO VỚI TÊN FILE CÓ GIỜ PHÚT ---
 
-        // 5. Nút Tải file .txt về máy
+        // 5. Nút "Tải bản thảo về" (File kèm Ngày_Giờ)
         btnSave.addEventListener('click', () => {
             const text = resultText.value;
             if (!text.trim()) {
                 notify("Chưa có chữ nào để tải về!", "#E57373");
                 return;
             }
-            // Tạo file .txt cho máy tải về
+            
+            // Lấy thời gian hiện tại chuẩn xác: Ngày-Tháng-Năm_GiờhPhút
+            const now = new Date();
+            const dateStr = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}h${String(now.getMinutes()).padStart(2, '0')}`;
+            const fileName = `Ban_Thao_${dateStr}_${timeStr}.txt`;
+
             const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `Ban_Thao_${new Date().toISOString().slice(0,10)}.txt`;
+            a.download = fileName;
             a.click();
             URL.revokeObjectURL(a.href);
             
-            notify("Đã tải file .txt về thư mục Downloads của máy!", "#FF9800");
+            notify(`Đã tải về file: <b>${fileName}</b>`, "#FF9800");
         });
 
-        // 6. Nút Mở file .txt từ máy
+        // 6. Nút "Mở bản thảo đã lưu"
         btnOpen.addEventListener('click', () => {
-            fileInput.click(); // Kích hoạt hộp thoại chọn file
+            fileInput.click();
         });
 
         fileInput.addEventListener('change', (e) => {
@@ -415,9 +418,9 @@
                 const reader = new FileReader();
                 reader.onload = function(evt) {
                     resultText.value = evt.target.result;
-                    spokenChunks = [evt.target.result];
+                    phraseHistory = [evt.target.result];
                     localStorage.setItem('voiceDraftForElderly', evt.target.result);
-                    notify("Đã mở nội dung file .txt lên thành công!", "#9C27B0");
+                    notify("Đã mở nội dung bản thảo lên thành công!", "#9C27B0");
                 };
                 reader.readAsText(file, 'UTF-8');
             }
@@ -426,9 +429,6 @@
         // Các nút điều khiển chính
         btnStart.addEventListener('click', () => {
             isManuallyStopped = false;
-            if (resultText.value.trim() !== '') {
-                spokenChunks = [resultText.value.trim()];
-            }
             recognition.start();
         });
 
