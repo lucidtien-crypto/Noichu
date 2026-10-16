@@ -2,20 +2,17 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <!-- Cấu hình chuẩn cho mọi loại điện thoại từ cũ đến mới, chống zoom màn hình khi bấm nhầm -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Soạn Thảo Bằng Giọng Nói</title>
-    <!-- Thư viện Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Tối ưu màu sắc để chống mỏi mắt */
         body { 
-            background-color: #F9F7F1; /* Màu nền kem ấm */
+            background-color: #F9F7F1; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            padding: 1.5rem 1rem; 
+            padding: 1.2rem 1rem; 
             color: #2C3539; 
             margin: 0;
             min-height: 100vh;
@@ -34,59 +31,70 @@
             text-align: center; 
             font-size: 1.8rem; 
             margin-top: 0;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
             color: #2C3539;
         }
 
-        /* Khu vực hiển thị thông báo */
         .status { 
             text-align: center;
-            font-size: 1.2rem; 
-            margin-bottom: 1rem; 
+            font-size: 1.1rem; 
+            margin-bottom: 0.8rem; 
             color: #666; 
             font-style: italic; 
-            min-height: 2.5rem; 
+            min-height: 2.2rem; 
             transition: color 0.3s;
         }
-        
-        /* Khung chữ thiết kế thông minh, tự động co giãn theo màn hình */
+
+        /* Thước đo tín hiệu âm thanh trực quan */
+        .meter-container {
+            width: 100%;
+            height: 12px;
+            background-color: #E0E0E0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .meter-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4CAF50, #FFEB3B, #F44336);
+            transition: width 0.1s ease-out;
+            border-radius: 6px;
+        }
+
         .text-box { 
             width: 100%; 
             flex-grow: 1;
-            min-height: 250px;
-            font-size: 28px; /* Chữ rất to để người già dễ đọc trên điện thoại */
+            min-height: 230px;
+            font-size: 28px; 
             line-height: 1.6; 
             padding: 1.2rem; 
             border-radius: 12px; 
             border: 2px solid #DCD7C9; 
             background-color: #FFFFFF; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
-            resize: none; /* Khóa kéo giãn để không vỡ giao diện điện thoại */
+            resize: none; 
             color: #1A1A1A; 
             box-sizing: border-box;
         }
         
-        .text-box:focus { 
-            outline: none; 
-            border-color: #A3C1AD; 
-        }
+        .text-box:focus { outline: none; border-color: #A3C1AD; }
+        .listening-glow { border-color: #4CAF50; box-shadow: 0 0 15px rgba(76, 175, 80, 0.4); }
         
-        .listening-glow { 
-            border-color: #4CAF50; 
-            box-shadow: 0 0 15px rgba(76, 175, 80, 0.4); 
-        }
-        
-        /* Bố cục nút bấm thông minh */
         .controls { 
             display: grid;
-            grid-template-columns: 1fr 1fr; /* Chia làm 2 cột trên máy tính */
-            gap: 12px; 
-            margin-top: 20px; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            margin-top: 15px; 
         }
         
         button { 
             font-size: 1.3rem; 
-            padding: 18px 15px; /* Vùng chạm (Touch target) cực lớn cho ngón tay */
+            padding: 16px 12px; 
             border: none; 
             border-radius: 12px; 
             cursor: pointer; 
@@ -99,25 +107,20 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
-        button:active { transform: translateY(2px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        button:active { transform: translateY(2px); }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        /* Phân loại màu nút bấm rõ ràng */
-        .btn-start { background-color: #4CAF50; color: white; grid-column: 1 / -1; font-size: 1.5rem; padding: 22px 15px;} /* Nút Bắt đầu to nhất, chiếm trọn 1 hàng */
+        .btn-start { background-color: #4CAF50; color: white; grid-column: 1 / -1; font-size: 1.4rem; padding: 20px 15px;} 
         .btn-stop { background-color: #E57373; color: white; }
         .btn-copy { background-color: #64B5F6; color: white; }
         .btn-save { background-color: #FFB74D; color: #333; }
         .btn-open { background-color: #BA68C8; color: white; }
 
-        /* Tối ưu hóa riêng cho màn hình điện thoại (Dưới 600px) */
         @media (max-width: 600px) {
             h1 { font-size: 1.5rem; }
             .text-box { font-size: 24px; padding: 1rem; }
-            .controls {
-                grid-template-columns: 1fr; /* Các nút sẽ xếp dọc thành 1 cột trên điện thoại */
-                gap: 10px;
-            }
-            .btn-start { grid-column: auto; } /* Hủy gộp cột trên điện thoại */
+            .controls { grid-template-columns: 1fr; gap: 10px; }
+            .btn-start { grid-column: auto; } 
         }
     </style>
 </head>
@@ -126,7 +129,12 @@
         <h1>Soạn Thảo Bằng Giọng Nói</h1>
         <div id="statusText" class="status">Sẵn sàng. Hãy bấm "Bắt đầu nói".</div>
         
-        <textarea id="resultText" class="text-box" placeholder="Chữ sẽ hiện ra ở đây..."></textarea>
+        <!-- Vạch đo âm lượng giúp người già tự kiểm tra giọng mình -->
+        <div class="meter-container" title="Thước đo âm lượng giọng nói">
+            <div id="meterBar" class="meter-bar"></div>
+        </div>
+
+        <textarea id="resultText" class="text-box" placeholder="Chữ sẽ hiện ra ngay khi bạn nói..."></textarea>
         
         <div class="controls">
             <button id="btnStart" class="btn-start"><i class="fas fa-microphone"></i> Bắt đầu nói</button>
@@ -145,51 +153,110 @@
         const btnSave = document.getElementById('btnSave');
         const btnOpen = document.getElementById('btnOpen');
         const statusText = document.getElementById('statusText');
+        const meterBar = document.getElementById('meterBar');
 
         let isManuallyStopped = true;
+        let final_transcript = '';
+        
+        // Cấu hình âm thanh & Vạch đo âm lượng (AudioContext)
+        let audioCtx, analyser, microphone, stream;
+        let animId;
 
-        // Hàm hỗ trợ thông báo nhẹ nhàng
         function notify(message, color) {
             statusText.innerHTML = message;
             statusText.style.color = color;
         }
 
-        // Cài đặt AI Nhận diện giọng nói
+        resultText.addEventListener('input', () => {
+            final_transcript = resultText.value;
+        });
+
+        // Hàm kích hoạt Lọc ồn + Kích âm + Đo vạch sóng
+        async function setupAudioFilter() {
+            try {
+                // Kích hoạt các tính năng nâng cao phần cứng Micro
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { 
+                        echoCancellation: true, // Chống vang
+                        noiseSuppression: true, // Lọc tiếng ồn môi trường
+                        autoGainControl: true   // TỰ ĐỘNG TĂNG ÂM LƯỢNG khi nói nhỏ
+                    } 
+                });
+
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioCtx.createAnalyser();
+                microphone = audioCtx.createMediaStreamSource(stream);
+                microphone.connect(analyser);
+                analyser.fftSize = 256;
+
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+
+                function drawMeter() {
+                    analyser.getByteFrequencyData(dataArray);
+                    let sum = 0;
+                    for (let i = 0; i < bufferLength; i++) {
+                        sum += dataArray[i];
+                    }
+                    let average = sum / bufferLength;
+                    // Quy đổi mức độ âm thanh ra % chiều rộng thanh đo
+                    let level = Math.min(100, Math.max(0, (average - 10) * 2.5));
+                    meterBar.style.width = level + '%';
+
+                    if (!isManuallyStopped) {
+                        animId = requestAnimationFrame(drawMeter);
+                    } else {
+                        meterBar.style.width = '0%';
+                    }
+                }
+                drawMeter();
+            } catch (err) {
+                console.log("Không thể khởi tạo đo vạch âm lượng: ", err);
+            }
+        }
+
+        function stopAudioFilter() {
+            if (animId) cancelAnimationFrame(animId);
+            if (stream) stream.getTracks().forEach(track => track.stop());
+            if (audioCtx) audioCtx.close();
+            meterBar.style.width = '0%';
+        }
+
+        // Nhận diện giọng nói
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
 
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
             recognition.continuous = true; 
-            recognition.interimResults = false; 
+            recognition.interimResults = true; 
             recognition.lang = 'vi-VN';
 
             recognition.onstart = function() {
-                notify("Đang nghe... <br><span style='font-size: 1rem;'>(Cứ nói từ từ, dừng lại suy nghĩ máy vẫn đợi)</span>", "#4CAF50");
+                notify("Đang nghe... <br><span style='font-size: 0.95rem;'>(Quan sát vạch xanh nhấp nháy khi bạn nói)</span>", "#4CAF50");
                 resultText.classList.add('listening-glow');
                 btnStart.disabled = true;
                 btnStop.disabled = false;
+                setupAudioFilter(); // Bật bộ lọc ồn và vạch đo âm lượng
             };
 
             recognition.onresult = function(event) {
-                let finalTranscript = '';
+                let interim_transcript = '';
+
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
                     if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript + ' ';
+                        let text = event.results[i][0].transcript;
+                        if (final_transcript !== '' && !final_transcript.endsWith(' ') && !final_transcript.endsWith('\n')) {
+                            text = ' ' + text;
+                        }
+                        final_transcript += text;
+                    } else {
+                        interim_transcript += event.results[i][0].transcript;
                     }
                 }
                 
-                if (finalTranscript !== '') {
-                    if(resultText.value.length > 0 && !resultText.value.endsWith(' ')) {
-                        resultText.value += ' ';
-                    }
-                    // Viết hoa chữ cái đầu
-                    finalTranscript = finalTranscript.charAt(0).toUpperCase() + finalTranscript.slice(1);
-                    resultText.value += finalTranscript;
-                    
-                    // Cuộn xuống dòng mới trên điện thoại
-                    resultText.scrollTop = resultText.scrollHeight;
-                }
+                resultText.value = final_transcript + interim_transcript;
+                resultText.scrollTop = resultText.scrollHeight;
             };
 
             recognition.onend = function() {
@@ -201,26 +268,32 @@
                     resultText.classList.remove('listening-glow');
                     btnStart.disabled = false;
                     btnStop.disabled = true;
+                    stopAudioFilter();
                 }
             };
 
             recognition.onerror = function(event) {
                 if (event.error === 'not-allowed') {
-                    notify("Lỗi: Máy chưa được cấp quyền dùng Micro.", "red");
+                    notify("Lỗi: Chưa cấp quyền dùng Micro.", "red");
                     isManuallyStopped = true;
                     btnStart.disabled = false;
                     btnStop.disabled = true;
                     resultText.classList.remove('listening-glow');
+                    stopAudioFilter();
                 }
             };
         } else {
-            notify("Điện thoại/trình duyệt này quá cũ, không hỗ trợ nhận diện giọng nói.", "red");
+            notify("Trình duyệt không hỗ trợ nhận diện giọng nói.", "red");
             btnStart.disabled = true;
         }
 
-        // Xử lý nút bấm
+        // Xử lý các nút bấm
         btnStart.addEventListener('click', () => {
             isManuallyStopped = false;
+            final_transcript = resultText.value;
+            if (final_transcript !== '' && !final_transcript.endsWith(' ') && !final_transcript.endsWith('\n')) {
+                final_transcript += ' '; 
+            }
             recognition.start();
         });
 
@@ -236,12 +309,11 @@
             
             notify("Đã copy chữ thành công!", "#2196F3");
             setTimeout(() => {
-                if(!isManuallyStopped) notify("Đang nghe... <br><span style='font-size: 1rem;'>(Cứ nói từ từ...)</span>", "#4CAF50");
+                if(!isManuallyStopped) notify("Đang nghe...", "#4CAF50");
                 else notify("Sẵn sàng.", "#666");
             }, 3000);
         });
 
-        // Nút Lưu Bản Thảo
         btnSave.addEventListener('click', () => {
             localStorage.setItem('voiceDraftForElderly', resultText.value);
             notify("Đã lưu an toàn vào máy!", "#FF9800");
@@ -251,11 +323,11 @@
             }, 3000);
         });
 
-        // Nút Mở Bản Thảo (MỚI)
         btnOpen.addEventListener('click', () => {
             const savedDraft = localStorage.getItem('voiceDraftForElderly');
             if (savedDraft) {
                 resultText.value = savedDraft;
+                final_transcript = savedDraft;
                 notify("Đã mở bản thảo cũ lên thành công.", "#9C27B0");
             } else {
                 notify("Chưa có bản thảo nào được lưu trước đây.", "#E57373");
@@ -266,12 +338,11 @@
             }, 3000);
         });
 
-        // Tự động lưu ngầm mỗi 10 giây (An toàn trên điện thoại hay bị đóng tab đột ngột)
         setInterval(() => {
             if (resultText.value.trim() !== "") {
                 localStorage.setItem('voiceDraftForElderly', resultText.value);
             }
-        }, 10000); 
+        }, 5000); 
 
     </script>
 </body>
