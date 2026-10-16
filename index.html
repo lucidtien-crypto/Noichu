@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <!-- Cấu hình chuẩn cho mọi loại điện thoại từ cũ đến mới, chống zoom màn hình khi bấm nhầm -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Soạn Thảo Bằng Giọng Nói</title>
+    <!-- Thư viện Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Tối ưu màu sắc để chống mỏi mắt */
+        body { 
+            background-color: #F9F7F1; /* Màu nền kem ấm */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 1.5rem 1rem; 
+            color: #2C3539; 
+            margin: 0;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        
+        .container { 
+            max-width: 800px; 
+            width: 100%; 
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        
+        h1 {
+            text-align: center; 
+            font-size: 1.8rem; 
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            color: #2C3539;
+        }
+
+        /* Khu vực hiển thị thông báo */
+        .status { 
+            text-align: center;
+            font-size: 1.2rem; 
+            margin-bottom: 1rem; 
+            color: #666; 
+            font-style: italic; 
+            min-height: 2.5rem; 
+            transition: color 0.3s;
+        }
+        
+        /* Khung chữ thiết kế thông minh, tự động co giãn theo màn hình */
+        .text-box { 
+            width: 100%; 
+            flex-grow: 1;
+            min-height: 250px;
+            font-size: 28px; /* Chữ rất to để người già dễ đọc trên điện thoại */
+            line-height: 1.6; 
+            padding: 1.2rem; 
+            border-radius: 12px; 
+            border: 2px solid #DCD7C9; 
+            background-color: #FFFFFF; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+            resize: none; /* Khóa kéo giãn để không vỡ giao diện điện thoại */
+            color: #1A1A1A; 
+            box-sizing: border-box;
+        }
+        
+        .text-box:focus { 
+            outline: none; 
+            border-color: #A3C1AD; 
+        }
+        
+        .listening-glow { 
+            border-color: #4CAF50; 
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.4); 
+        }
+        
+        /* Bố cục nút bấm thông minh */
+        .controls { 
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Chia làm 2 cột trên máy tính */
+            gap: 12px; 
+            margin-top: 20px; 
+        }
+        
+        button { 
+            font-size: 1.3rem; 
+            padding: 18px 15px; /* Vùng chạm (Touch target) cực lớn cho ngón tay */
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            gap: 10px; 
+            transition: all 0.2s ease; 
+            font-weight: 600; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        button:active { transform: translateY(2px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Phân loại màu nút bấm rõ ràng */
+        .btn-start { background-color: #4CAF50; color: white; grid-column: 1 / -1; font-size: 1.5rem; padding: 22px 15px;} /* Nút Bắt đầu to nhất, chiếm trọn 1 hàng */
+        .btn-stop { background-color: #E57373; color: white; }
+        .btn-copy { background-color: #64B5F6; color: white; }
+        .btn-save { background-color: #FFB74D; color: #333; }
+        .btn-open { background-color: #BA68C8; color: white; }
+
+        /* Tối ưu hóa riêng cho màn hình điện thoại (Dưới 600px) */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.5rem; }
+            .text-box { font-size: 24px; padding: 1rem; }
+            .controls {
+                grid-template-columns: 1fr; /* Các nút sẽ xếp dọc thành 1 cột trên điện thoại */
+                gap: 10px;
+            }
+            .btn-start { grid-column: auto; } /* Hủy gộp cột trên điện thoại */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Soạn Thảo Bằng Giọng Nói</h1>
+        <div id="statusText" class="status">Sẵn sàng. Hãy bấm "Bắt đầu nói".</div>
+        
+        <textarea id="resultText" class="text-box" placeholder="Chữ sẽ hiện ra ở đây..."></textarea>
+        
+        <div class="controls">
+            <button id="btnStart" class="btn-start"><i class="fas fa-microphone"></i> Bắt đầu nói</button>
+            <button id="btnStop" class="btn-stop" disabled><i class="fas fa-stop-circle"></i> Ngừng lại</button>
+            <button id="btnCopy" class="btn-copy"><i class="fas fa-copy"></i> Copy chữ</button>
+            <button id="btnSave" class="btn-save"><i class="fas fa-save"></i> Lưu bản thảo</button>
+            <button id="btnOpen" class="btn-open"><i class="fas fa-folder-open"></i> Mở bản thảo</button>
+        </div>
+    </div>
+
+    <script>
+        const resultText = document.getElementById('resultText');
+        const btnStart = document.getElementById('btnStart');
+        const btnStop = document.getElementById('btnStop');
+        const btnCopy = document.getElementById('btnCopy');
+        const btnSave = document.getElementById('btnSave');
+        const btnOpen = document.getElementById('btnOpen');
+        const statusText = document.getElementById('statusText');
+
+        let isManuallyStopped = true;
+
+        // Hàm hỗ trợ thông báo nhẹ nhàng
+        function notify(message, color) {
+            statusText.innerHTML = message;
+            statusText.style.color = color;
+        }
+
+        // Cài đặt AI Nhận diện giọng nói
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = true; 
+            recognition.interimResults = false; 
+            recognition.lang = 'vi-VN';
+
+            recognition.onstart = function() {
+                notify("Đang nghe... <br><span style='font-size: 1rem;'>(Cứ nói từ từ, dừng lại suy nghĩ máy vẫn đợi)</span>", "#4CAF50");
+                resultText.classList.add('listening-glow');
+                btnStart.disabled = true;
+                btnStop.disabled = false;
+            };
+
+            recognition.onresult = function(event) {
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript + ' ';
+                    }
+                }
+                
+                if (finalTranscript !== '') {
+                    if(resultText.value.length > 0 && !resultText.value.endsWith(' ')) {
+                        resultText.value += ' ';
+                    }
+                    // Viết hoa chữ cái đầu
+                    finalTranscript = finalTranscript.charAt(0).toUpperCase() + finalTranscript.slice(1);
+                    resultText.value += finalTranscript;
+                    
+                    // Cuộn xuống dòng mới trên điện thoại
+                    resultText.scrollTop = resultText.scrollHeight;
+                }
+            };
+
+            recognition.onend = function() {
+                if (!isManuallyStopped) {
+                    try { recognition.start(); } 
+                    catch (e) { console.error(e); }
+                } else {
+                    notify("Đã ngừng. Bạn có thể sửa hoặc bấm Copy.", "#666");
+                    resultText.classList.remove('listening-glow');
+                    btnStart.disabled = false;
+                    btnStop.disabled = true;
+                }
+            };
+
+            recognition.onerror = function(event) {
+                if (event.error === 'not-allowed') {
+                    notify("Lỗi: Máy chưa được cấp quyền dùng Micro.", "red");
+                    isManuallyStopped = true;
+                    btnStart.disabled = false;
+                    btnStop.disabled = true;
+                    resultText.classList.remove('listening-glow');
+                }
+            };
+        } else {
+            notify("Điện thoại/trình duyệt này quá cũ, không hỗ trợ nhận diện giọng nói.", "red");
+            btnStart.disabled = true;
+        }
+
+        // Xử lý nút bấm
+        btnStart.addEventListener('click', () => {
+            isManuallyStopped = false;
+            recognition.start();
+        });
+
+        btnStop.addEventListener('click', () => {
+            isManuallyStopped = true;
+            recognition.stop();
+        });
+
+        btnCopy.addEventListener('click', () => {
+            resultText.select();
+            document.execCommand('copy');
+            window.getSelection().removeAllRanges(); 
+            
+            notify("Đã copy chữ thành công!", "#2196F3");
+            setTimeout(() => {
+                if(!isManuallyStopped) notify("Đang nghe... <br><span style='font-size: 1rem;'>(Cứ nói từ từ...)</span>", "#4CAF50");
+                else notify("Sẵn sàng.", "#666");
+            }, 3000);
+        });
+
+        // Nút Lưu Bản Thảo
+        btnSave.addEventListener('click', () => {
+            localStorage.setItem('voiceDraftForElderly', resultText.value);
+            notify("Đã lưu an toàn vào máy!", "#FF9800");
+            setTimeout(() => {
+                if(!isManuallyStopped) notify("Đang nghe...", "#4CAF50");
+                else notify("Sẵn sàng.", "#666");
+            }, 3000);
+        });
+
+        // Nút Mở Bản Thảo (MỚI)
+        btnOpen.addEventListener('click', () => {
+            const savedDraft = localStorage.getItem('voiceDraftForElderly');
+            if (savedDraft) {
+                resultText.value = savedDraft;
+                notify("Đã mở bản thảo cũ lên thành công.", "#9C27B0");
+            } else {
+                notify("Chưa có bản thảo nào được lưu trước đây.", "#E57373");
+            }
+            setTimeout(() => {
+                if(!isManuallyStopped) notify("Đang nghe...", "#4CAF50");
+                else notify("Sẵn sàng.", "#666");
+            }, 3000);
+        });
+
+        // Tự động lưu ngầm mỗi 10 giây (An toàn trên điện thoại hay bị đóng tab đột ngột)
+        setInterval(() => {
+            if (resultText.value.trim() !== "") {
+                localStorage.setItem('voiceDraftForElderly', resultText.value);
+            }
+        }, 10000); 
+
+    </script>
+</body>
+</html>
