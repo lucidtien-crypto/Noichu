@@ -35,38 +35,48 @@
             color: #2C3539;
         }
 
-        .status { 
-            text-align: center;
+        .status-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 0.8rem;
+            min-height: 2.2rem;
+        }
+
+        /* Đèn báo trạng thái Xanh Ngọc Bích */
+        .status-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: #B0BEC5; /* Màu xám khi nghỉ */
+            transition: all 0.3s ease;
+        }
+
+        /* Khi đang thu âm: Đèn Xanh Ngọc Bích nhấp nháy tỏa sáng */
+        .status-dot.active {
+            background-color: #00A86B; /* Màu Xanh Ngọc Bích */
+            box-shadow: 0 0 12px #00A86B;
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 168, 107, 0.7); }
+            70% { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(0, 168, 107, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 168, 107, 0); }
+        }
+
+        .status-text { 
             font-size: 1.1rem; 
-            margin-bottom: 0.8rem; 
             color: #666; 
             font-style: italic; 
-            min-height: 2.2rem; 
-            transition: color 0.3s;
         }
 
-        .meter-container {
-            width: 100%;
-            height: 10px;
-            background-color: #E0E0E0;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-bottom: 10px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
-        }
-
-        .meter-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #4CAF50, #FFEB3B, #F44336);
-            transition: width 0.1s ease-out;
-            border-radius: 5px;
-        }
-
+        /* Khung chứa chữ với hiệu ứng viền Xanh Ngọc Bích */
         .text-box { 
             width: 100%; 
             flex-grow: 1;
-            min-height: 220px;
+            min-height: 240px;
             font-size: 28px; 
             line-height: 1.6; 
             padding: 1.2rem; 
@@ -77,11 +87,18 @@
             resize: none; 
             color: #1A1A1A; 
             box-sizing: border-box;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
         }
         
         .text-box:focus { outline: none; border-color: #A3C1AD; }
-        .listening-glow { border-color: #4CAF50; box-shadow: 0 0 15px rgba(76, 175, 80, 0.4); }
         
+        /* Hiệu ứng viền Xanh Ngọc Bích tỏa sáng nhẹ khi Mic làm việc */
+        .recording-jade { 
+            border-color: #00A86B !important; 
+            box-shadow: 0 0 18px rgba(0, 168, 107, 0.35) !important; 
+        }
+        
+        /* Bố cục nút bấm */
         .controls-edit {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -114,7 +131,7 @@
         button:active { transform: translateY(2px); }
         button:disabled { opacity: 0.4; cursor: not-allowed; }
         
-        .btn-start { background-color: #4CAF50; color: white; grid-column: 1 / -1; font-size: 1.4rem; padding: 18px 15px;} 
+        .btn-start { background-color: #00A86B; color: white; grid-column: 1 / -1; font-size: 1.4rem; padding: 18px 15px;} 
         .btn-stop { background-color: #E57373; color: white; }
         .btn-copy { background-color: #64B5F6; color: white; }
         .btn-save { background-color: #FFB74D; color: #333; }
@@ -137,22 +154,22 @@
 <body>
     <div class="container">
         <h1>Soạn Thảo Bằng Giọng Nói</h1>
-        <div id="statusText" class="status">Sẵn sàng. Hãy bấm "Bắt đầu nói".</div>
         
-        <div class="meter-container">
-            <div id="meterBar" class="meter-bar"></div>
+        <div class="status-container">
+            <div id="statusDot" class="status-dot"></div>
+            <div id="statusText" class="status-text">Sẵn sàng. Hãy bấm "Bắt đầu nói".</div>
         </div>
 
         <textarea id="resultText" class="text-box" placeholder="Chữ sẽ hiện ra ngay khi bạn nói..."></textarea>
         
-        <!-- Nhóm nút xóa -->
+        <!-- Nhóm nút xóa thông minh -->
         <div class="controls-edit">
             <button id="btnDeleteWord" class="btn-delete-word"><i class="fas fa-backspace"></i> Xóa 1 từ</button>
             <button id="btnDeleteChunk" class="btn-delete-chunk"><i class="fas fa-outdent"></i> Xóa đoạn vừa nói</button>
             <button id="btnClearAll" class="btn-clear-all"><i class="fas fa-times-circle"></i> Xóa tất cả (X)</button>
         </div>
 
-        <!-- Nhóm nút chức năng -->
+        <!-- Nhóm nút chức năng chính -->
         <div class="controls-main">
             <button id="btnStart" class="btn-start"><i class="fas fa-microphone"></i> Bắt đầu nói</button>
             <button id="btnStop" class="btn-stop" disabled><i class="fas fa-stop-circle"></i> Ngừng lại</button>
@@ -178,22 +195,18 @@
         const btnClearAll = document.getElementById('btnClearAll');
         const btnUndo = document.getElementById('btnUndo');
         const statusText = document.getElementById('statusText');
-        const meterBar = document.getElementById('meterBar');
+        const statusDot = document.getElementById('statusDot');
 
         let isManuallyStopped = true;
-        
-        // MẢNG DANH SÁCH LƯU CÁC CÂU NÓI NGUYÊN BẢN (CHỐNG NHẦM THỨ TỰ LƯU)
         let chunks = []; 
         let undoHistory = ''; 
-        
-        let audioCtx, analyser, microphone, stream, animId;
 
         function notify(message, color) {
             statusText.innerHTML = message;
-            statusText.style.color = color;
+            statusText.style.color = color || "#666";
         }
 
-        // Hàm cập nhật chữ ra màn hình
+        // Cập nhật giao diện chữ
         function renderText(interim = '') {
             let fullText = chunks.join(' ');
             if (interim.trim() !== '') {
@@ -205,13 +218,13 @@
             localStorage.setItem('voiceDraftForElderly', chunks.join(' '));
         }
 
-        // Tự động tải bản thảo cũ khi vừa mở lại trang
+        // Tự động khôi phục bài viết cũ khi mở lại trang
         window.addEventListener('DOMContentLoaded', () => {
             const savedDraft = localStorage.getItem('voiceDraftForElderly');
             if (savedDraft && savedDraft.trim() !== '') {
                 chunks = [savedDraft.trim()];
                 renderText();
-                notify("Đã tự động mở lại bài viết bạn đang làm dở.", "#4CAF50");
+                notify("Đã tự động mở lại bài viết bạn đang làm dở.", "#00A86B");
             }
         });
 
@@ -224,12 +237,12 @@
         function resetMicrophoneIfListening() {
             if (!isManuallyStopped && recognition) {
                 try {
-                    recognition.abort(); // Xóa sạch đệm âm thanh đang chờ xử lý
+                    recognition.abort();
                 } catch(e) { console.log(e); }
             }
         }
 
-        // Đồng bộ khi người dùng gõ tay
+        // Đồng bộ khi gõ tay
         resultText.addEventListener('input', () => {
             let val = resultText.value.trim();
             chunks = val ? [val] : [];
@@ -237,45 +250,7 @@
             resetMicrophoneIfListening();
         });
 
-        // Xử lý Micro & Vạch âm thanh
-        async function setupAudioFilter() {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } 
-                });
-
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioCtx.createAnalyser();
-                microphone = audioCtx.createMediaStreamSource(stream);
-                microphone.connect(analyser);
-                analyser.fftSize = 256;
-
-                const bufferLength = analyser.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
-
-                function drawMeter() {
-                    analyser.getByteFrequencyData(dataArray);
-                    let sum = 0;
-                    for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
-                    let average = sum / bufferLength;
-                    let level = Math.min(100, Math.max(0, (average - 10) * 2.5));
-                    meterBar.style.width = level + '%';
-
-                    if (!isManuallyStopped) animId = requestAnimationFrame(drawMeter);
-                    else meterBar.style.width = '0%';
-                }
-                drawMeter();
-            } catch (err) { console.log("Lỗi vạch âm lượng:", err); }
-        }
-
-        function stopAudioFilter() {
-            if (animId) cancelAnimationFrame(animId);
-            if (stream) stream.getTracks().forEach(track => track.stop());
-            if (audioCtx) audioCtx.close();
-            meterBar.style.width = '0%';
-        }
-
-        // Nhận diện giọng nói chuẩn xác
+        // Nhận diện giọng nói tối ưu kép cho cả Mobile & Laptop
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
 
@@ -286,11 +261,14 @@
             recognition.lang = 'vi-VN';
 
             recognition.onstart = function() {
-                notify("Đang nghe... <br><span style='font-size: 0.95rem;'>(Đang thu âm tiếng nói của bạn)</span>", "#4CAF50");
-                resultText.classList.add('listening-glow');
+                notify("Đang thu âm... <br><span style='font-size: 0.95rem;'>(Cứ nói từ từ, dừng lại ngẫm nghĩ máy vẫn đợi)</span>", "#00A86B");
+                
+                // Kích hoạt hiệu ứng Xanh Ngọc Bích nhấp nháy
+                statusDot.classList.add('active');
+                resultText.classList.add('recording-jade');
+                
                 btnStart.disabled = true;
                 btnStop.disabled = false;
-                setupAudioFilter();
             };
 
             recognition.onresult = function(event) {
@@ -303,7 +281,7 @@
                         let cleanText = transcript.trim();
                         if (cleanText !== '') {
                             cleanText = cleanText.charAt(0).toUpperCase() + cleanText.slice(1);
-                            chunks.push(cleanText); // Đưa câu vừa nói vào cuối danh sách
+                            chunks.push(cleanText); 
                         }
                     } else {
                         interimTranscript += transcript;
@@ -318,31 +296,33 @@
                     try { recognition.start(); } catch (e) {}
                 } else {
                     notify("Đã ngừng. Bạn có thể sửa hoặc bấm Copy.", "#666");
-                    resultText.classList.remove('listening-glow');
+                    
+                    // Tắt hiệu ứng Xanh Ngọc Bích
+                    statusDot.classList.remove('active');
+                    resultText.classList.remove('recording-jade');
+                    
                     btnStart.disabled = false;
                     btnStop.disabled = true;
-                    stopAudioFilter();
                 }
             };
 
             recognition.onerror = function(event) {
                 if (event.error === 'not-allowed') {
-                    notify("Lỗi: Chưa cấp quyền dùng Micro.", "red");
+                    notify("Lỗi: Chưa cấp quyền sử dụng Micro.", "red");
                     isManuallyStopped = true;
+                    statusDot.classList.remove('active');
+                    resultText.classList.remove('recording-jade');
                     btnStart.disabled = false;
                     btnStop.disabled = true;
-                    resultText.classList.remove('listening-glow');
-                    stopAudioFilter();
                 }
             };
         } else {
-            notify("Trình duyệt không hỗ trợ nhận diện giọng nói.", "red");
+            notify("Trình duyệt này không hỗ trợ nhận diện giọng nói.", "red");
             btnStart.disabled = true;
         }
 
         // --- CÁC NÚT XÓA THÔNG MINH ---
 
-        // 1. Xóa tất cả
         btnClearAll.addEventListener('click', () => {
             if (resultText.value.trim() !== '') {
                 saveStateForUndo();
@@ -354,7 +334,6 @@
             }
         });
 
-        // 2. Xóa 1 từ
         btnDeleteWord.addEventListener('click', () => {
             let current = chunks.join(' ');
             if (!current.trim()) current = resultText.value;
@@ -371,11 +350,10 @@
             }
         });
 
-        // 3. Xóa đoạn vừa nói (XÓA ĐÚNG CÂU VỪA NÓI GẦN NHẤT)
         btnDeleteChunk.addEventListener('click', () => {
             if (chunks.length > 0) {
                 saveStateForUndo();
-                chunks.pop(); // Xóa đúng phần tử cuối cùng vừa nói
+                chunks.pop(); 
                 renderText();
                 resetMicrophoneIfListening();
                 notify("Đã xóa đoạn vừa nói.", "#263238");
@@ -390,17 +368,16 @@
             }
         });
 
-        // 4. Khôi phục
         btnUndo.addEventListener('click', () => {
             saveStateForUndo();
             chunks = undoHistory.trim() ? [undoHistory.trim()] : [];
             renderText();
             btnUndo.style.display = 'none';
             resetMicrophoneIfListening();
-            notify("Đã khôi phục lại chữ thành công!", "#4CAF50");
+            notify("Đã khôi phục lại chữ thành công!", "#00A86B");
         });
 
-        // --- TẢI & MỞ BẢN THẢO VỚI NGÀY GIỜ ---
+        // --- LƯU VÀ MỞ BẢN THẢO VỚI TÊN FILE CÓ NGÀY GIỜ PHÚT ---
 
         btnSave.addEventListener('click', () => {
             const text = resultText.value;
@@ -421,7 +398,7 @@
             a.click();
             URL.revokeObjectURL(a.href);
             
-            notify(`Đã tải về file: <b>${fileName}</b>`, "#FF9800");
+            notify(`Đã tải về bản thảo: <b>${fileName}</b>`, "#FF9800");
         });
 
         btnOpen.addEventListener('click', () => {
@@ -435,7 +412,7 @@
                 reader.onload = function(evt) {
                     chunks = [evt.target.result.trim()];
                     renderText();
-                    notify("Đã mở nội dung bản thảo lên thành công!", "#9C27B0");
+                    notify("Đã mở nội dung bản thảo lên thành công!", "#BA68C8");
                 };
                 reader.readAsText(file, 'UTF-8');
             }
