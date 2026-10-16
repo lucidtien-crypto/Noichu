@@ -40,7 +40,7 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.6rem;
             min-height: 2.2rem;
         }
 
@@ -68,6 +68,33 @@
             font-size: 1.1rem; 
             color: #666; 
             font-style: italic; 
+        }
+
+        /* Thanh phím tắt Dấu & Định dạng 1-Chạm */
+        .quick-punctuation-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+            justify-content: center;
+        }
+
+        .btn-punc {
+            background-color: #E0EFC1;
+            color: #1B5E20;
+            border: 1px solid #A5D6A7;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.15s ease;
+        }
+
+        .btn-punc:active {
+            background-color: #A5D6A7;
+            transform: scale(0.96);
         }
 
         .text-box { 
@@ -144,6 +171,7 @@
             .controls-main, .controls-edit { grid-template-columns: 1fr; gap: 8px; }
             .btn-start { grid-column: auto; } 
             button { padding: 14px 10px; font-size: 1.15rem; }
+            .btn-punc { padding: 6px 10px; font-size: 1rem; }
         }
     </style>
 </head>
@@ -154,6 +182,19 @@
         <div class="status-container">
             <div id="statusDot" class="status-dot"></div>
             <div id="statusText" class="status-text">Sẵn sàng. Hãy bấm "Bắt đầu nói".</div>
+        </div>
+
+        <!-- Thanh phím tắt Dấu & Định dạng 1-Chạm cho người lớn tuổi -->
+        <div class="quick-punctuation-bar">
+            <button class="btn-punc" onclick="insertSymbol('.')">. Chấm</button>
+            <button class="btn-punc" onclick="insertSymbol(',')">, Phẩy</button>
+            <button class="btn-punc" onclick="insertSymbol('?')">? Hỏi</button>
+            <button class="btn-punc" onclick="insertSymbol('!')">! Than</button>
+            <button class="btn-punc" onclick="insertSymbol(':')">: Hai chấm</button>
+            <button class="btn-punc" onclick="insertSymbol('...')">... Ba chấm</button>
+            <button class="btn-punc" onclick="insertSymbol('\"')">" "</button>
+            <button class="btn-punc" onclick="insertSymbol('\n- ')">- Gạch dòng</button>
+            <button class="btn-punc" onclick="insertSymbol('\n')">↵ Xuống dòng</button>
         </div>
 
         <textarea id="resultText" class="text-box" placeholder="Chữ sẽ hiện ra ngay khi bạn nói..."></textarea>
@@ -203,24 +244,46 @@
             statusText.style.color = color || "#666";
         }
 
-        // BỘ XỬ LÝ ĐỊNH DẠNG VIỆT NAM THÔNG MINH (UNICODE WORD BOUNDARY STRICT)
+        // =========================================================================
+        // DANH SÁCH BẢO VỆ TỪ GHÉP THỰC TẾ (TRÁNH LỖI "Chấm dứt" -> " . ")
+        // =========================================================================
+        const protectedPhrases = [
+            "chấm dứt", "chấm điểm", "chấm mắm", "chấm thi", "chấm công", "chấm tròn", "chấm phá", "chấm muối",
+            "phẩy tay", "phẩy áo", "phẩy khuấy",
+            "hỏi thăm", "hỏi chuyện", "câu hỏi", "hỏi đáp", "hỏi han",
+            "xuất hàng", "xuống núi", "xuống làng", "gạch tên", "gạch sổ"
+        ];
+
         function applySmartVietnameseFormatting(text) {
             if (!text) return text;
 
             let str = text;
 
-            // 1. Định dạng cấu trúc trang (Lệnh dài trước)
-            str = str.replace(/(?<!\p{L})(dấu gạch đầu dòng|gạch đầu dòng)(?!\p{L})/gui, "\n- ");
-            str = str.replace(/(?<!\p{L})(thụt vào đầu dòng|thụt đầu dòng)(?!\p{L})/gui, "\n    ");
+            // LỚP 1: TẠM THỜI BẢO VỆ CÁC CỤM TỪ GHÉP THỰC TẾ
+            let placeholders = {};
+            protectedPhrases.forEach((phrase, index) => {
+                let tag = `__PROT_${index}__`;
+                let regex = new RegExp(`(?<!\\p{L})${phrase}(?!\\p{L})`, 'gui');
+                if (regex.test(str)) {
+                    placeholders[tag] = phrase;
+                    str = str.replace(regex, tag);
+                }
+            });
+
+            // LỚP 2: ĐỊNH DẠNG CẤU TRÚC & DẤU CÂU
+
+            // Định dạng trang
+            str = str.replace(/(?<!\p{L})(dấu gạch đầu dòng|gạch đầu dòng|gạch đầu rồng)(?!\p{L})/gui, "\n- ");
+            str = str.replace(/(?<!\p{L})(thụt vào đầu dòng|thụt đầu dòng|thụt lùi vào)(?!\p{L})/gui, "\n    ");
             str = str.replace(/(?<!\p{L})(xuống dòng mới|xuống hàng mới|xuống dòng|xuống hàng|sang dòng)(?!\p{L})/gui, "\n");
 
-            // 2. Định dạng Ngoặc đơn & Ngoặc kép
+            // Ngoặc đơn & Ngoặc kép
             str = str.replace(/(?<!\p{L})(mở ngoặc kép|mở kép)(?!\p{L})/gui, ' "');
             str = str.replace(/(?<!\p{L})(đóng ngoặc kép|đóng kép)(?!\p{L})/gui, '" ');
             str = str.replace(/(?<!\p{L})(mở ngoặc đơn|mở ngoặc)(?!\p{L})/gui, ' (');
             str = str.replace(/(?<!\p{L})(đóng ngoặc đơn|đóng ngoặc)(?!\p{L})/gui, ') ');
 
-            // 3. Dấu câu nâng cao
+            // Dấu câu
             str = str.replace(/(?<!\p{L})(dấu ba chấm|ba chấm|chấm chấm chấm)(?!\p{L})/gui, "...");
             str = str.replace(/(?<!\p{L})(dấu hai chấm|hai chấm)(?!\p{L})/gui, ":");
             str = str.replace(/(?<!\p{L})(dấu chấm phẩy|chấm phẩy)(?!\p{L})/gui, ";");
@@ -230,32 +293,53 @@
             str = str.replace(/(?<!\p{L})(dấu phẩy|dấu phảy|phẩy|phảy)(?!\p{L})/gui, ",");
             str = str.replace(/(?<!\p{L})(dấu gạch ngang|dấu gạch nối|gạch ngang|gạch nối)(?!\p{L})/gui, " - ");
 
-            // 4. Dấu toán học
-            str = str.replace(/(?<!\p{L})(dấu lớn hơn)(?!\p{L})/gui, " > ");
-            str = str.replace(/(?<!\p{L})(dấu nhỏ hơn)(?!\p{L})/gui, " < ");
-
-            // 5. Chuẩn hóa khoảng cách xung quanh dấu
+            // Chuẩn hóa khoảng cách xung quanh dấu
             str = str.replace(/\s+([\.,:;!\?\)\"])/g, "$1");
             str = str.replace(/([\.,:;!\?\)])([^\s\n\.,:;!\?\)\"])/g, "$1 $2");
             str = str.replace(/\(\s+/g, "(");
             str = str.replace(/\"\s+/g, '"');
 
-            // 6. Viết hoa đại từ xưng hô (Chỉ áp dụng khi từ ĐỨNG ĐỘC LẬP HOÀN TOÀN)
+            // Viết hoa đại từ xưng hô độc lập
             const honorificsRegex = /(?<!\p{L})(anh|chị|cô|chú|bác|ông|bà|thầy|cậu|dì|mợ|cháu|em)(?!\p{L})/gui;
             str = str.replace(honorificsRegex, function(match) {
                 return match.charAt(0).toUpperCase() + match.slice(1).toLowerCase();
             });
 
-            // 7. Viết hoa chữ cái đầu tiên sau ngắt câu/xuống dòng
+            // Viết hoa chữ cái đầu tiên sau ngắt câu/xuống dòng
             str = str.charAt(0).toUpperCase() + str.slice(1);
             str = str.replace(/([\.\?!\n]\s*|\n-\s*|\n\s{4}\s*|\.\.\.\s*)([a-zàáảãạăắằẳẵặâấầẩẫậeéèẻẽẹêếềểễệiíìỉĩịoóòỏõọôốồổỗộơớờởỡợuúùủũụưứừửữựyýỳỷỹỵdđ])/gi, function(match, p1, p2) {
                 return p1 + p2.toUpperCase();
             });
 
+            // LỚP 3: KHÔI PHỤC CÁC CỤM TỪ GHÉP NGUYÊN BẢN
+            Object.keys(placeholders).forEach(tag => {
+                let original = placeholders[tag];
+                str = str.replace(new RegExp(tag, 'g'), original);
+            });
+
             return str;
         }
 
-        // LỌC TRÙNG LẶP TRÊN ĐIỆN THOẠI
+        // HÀM BẤM CHÈN DẤU 1-CHẠM
+        function insertSymbol(symbol) {
+            saveStateForUndo();
+            let text = resultText.value;
+            let spaceNeeded = (text.length > 0 && !text.endsWith(' ') && !text.endsWith('\n') && symbol !== '.' && symbol !== ',' && symbol !== '?' && symbol !== '!' && symbol !== ':' && symbol !== '...');
+            
+            if (symbol === '.' || symbol === ',' || symbol === '?' || symbol === '!' || symbol === ':' || symbol === '...') {
+                text = text.trimEnd() + symbol + ' ';
+            } else {
+                text += (spaceNeeded ? ' ' : '') + symbol;
+            }
+
+            resultText.value = text;
+            sessionBaseText = text;
+            localStorage.setItem('voiceDraftForElderly', text);
+            resetMicrophoneIfListening();
+            notify(`Đã chèn ký hiệu: <b>${symbol.replace('\n', 'Xuống dòng')}</b>`, "#00A86B");
+        }
+
+        // LỌC TRÙNG LẶP ĐIỆN THOẠI
         function getCleanSessionTranscript(results) {
             let combined = "";
 
@@ -345,7 +429,7 @@
             recognition.lang = 'vi-VN';
 
             recognition.onstart = function() {
-                notify("Đang thu âm... <br><span style='font-size: 0.95rem;'>(Đang lắng nghe tiếng nói của bạn)</span>", "#00A86B");
+                notify("Đang thu âm... <br><span style='font-size: 0.95rem;'>(Bấm các nút màu xanh phía trên để chèn nhanh dấu)</span>", "#00A86B");
                 statusDot.classList.add('active');
                 resultText.classList.add('recording-jade');
                 
