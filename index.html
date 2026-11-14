@@ -2,323 +2,689 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soạn Thảo Bằng Giọng Nói</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sổ Tay Giọng Nói Tiếng Việt</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { 
-            background-color: #F9F7F1; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 1rem; 
-            color: #2C3539; 
-            margin: 0;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-        
-        .container { 
-            max-width: 850px; 
-            width: 100%; 
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-        
-        h1 {
-            text-align: center; 
-            font-size: 1.7rem; 
-            margin-top: 0;
-            margin-bottom: 0.3rem;
-            color: #2C3539;
+        :root {
+            --bg-parchment: #F3EDE0;
+            --bg-paper: #FFFDF8;
+            --bg-card-warm: #EAE1CE;
+            --border-bronze: #B5A689;
+            --border-dark-bronze: #8C7A5B;
+            --ink-primary: #1C1917;
+            --ink-secondary: #4A4036;
+            --jade-main: #1B6B4D;
+            --jade-shadow: #114732;
+            --jade-tint: #E4F1EB;
+            --crimson-main: #A61C1C;
+            --crimson-shadow: #6E1111;
+            --crimson-tint: #FBEAE8;
+            --navy-main: #1E3F66;
+            --navy-shadow: #12263E;
+            --gold-bg: #FBF3DF;
+            --gold-border: #C5963A;
+            --gold-text: #4E350B;
         }
 
-        .status-container {
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            overscroll-behavior: none;
+            background-color: var(--bg-parchment);
+            font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+            color: var(--ink-primary);
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* KHUNG TỔNG FIT TRỌN TRONG MÀN HÌNH */
+        .container {
+            width: 100%;
+            max-width: 680px;
+            height: 100%;
+            max-height: 100dvh;
+            padding: max(6px, env(safe-area-inset-top)) 10px max(8px, env(safe-area-inset-bottom)) 10px;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(5px, 0.9dvh, 8px);
+            overflow: hidden;
+        }
+
+        /* TIÊU ĐỀ CỔ ĐIỂN GỌN */
+        .classic-header {
+            flex-shrink: 0;
+            text-align: center;
+            padding-bottom: 3px;
+            border-bottom: 1.5px solid var(--border-bronze);
+        }
+
+        .classic-header h1 {
+            font-family: 'Lora', Georgia, serif;
+            font-size: clamp(1.08rem, 2.4dvh, 1.3rem);
+            font-weight: 700;
+            margin: 0;
+            color: var(--ink-primary);
+            letter-spacing: 0.3px;
+        }
+
+        /* KHUNG TRẠNG THÁI THU ÂM */
+        .status-banner {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: clamp(7px, 1.1dvh, 10px) 12px;
+            border-radius: 11px;
+            background-color: var(--bg-card-warm);
+            border: 2px solid var(--border-bronze);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            transition: all 0.2s ease;
+        }
+
+        .status-banner.is-recording {
+            background-color: var(--jade-tint);
+            border-color: var(--jade-main);
+            box-shadow: 0 2px 8px rgba(27, 107, 77, 0.2);
+        }
+
+        .status-banner.is-error {
+            background-color: var(--crimson-tint);
+            border-color: var(--crimson-main);
+        }
+
+        .status-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #786C5E;
+            border: 2px solid #FFFDF8;
+            flex-shrink: 0;
+        }
+
+        .status-banner.is-recording .status-indicator {
+            background-color: #C81E1E;
+            animation: pulse-rec 1.2s infinite;
+        }
+
+        @keyframes pulse-rec {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(200, 30, 30, 0.75); }
+            70% { transform: scale(1.15); box-shadow: 0 0 0 9px rgba(200, 30, 30, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(200, 30, 30, 0); }
+        }
+
+        .status-content {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .status-title {
+            font-size: clamp(0.98rem, 2.1dvh, 1.12rem);
+            font-weight: 800;
+            color: var(--ink-primary);
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .status-banner.is-recording .status-title {
+            color: #124E37;
+        }
+
+        .status-banner.is-error .status-title {
+            color: #8A1515;
+        }
+
+        .status-sub {
+            font-size: clamp(0.84rem, 1.8dvh, 0.94rem);
+            font-weight: 600;
+            color: var(--ink-secondary);
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* GHI CHÚ GỌN CHO NGƯỜI CAO TUỔI */
+        .elderly-guide {
+            flex-shrink: 0;
+            background-color: var(--gold-bg);
+            border: 1.5px solid var(--gold-border);
+            border-radius: 10px;
+            padding: clamp(5px, 0.8dvh, 8px) 10px;
+            font-size: clamp(0.84rem, 1.8dvh, 0.94rem);
+            line-height: 1.35;
+            color: var(--gold-text);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .guide-label {
+            font-weight: 800;
+        }
+
+        .guide-badges {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .badge-cmd {
+            background-color: #FFFDF8;
+            border: 1px solid var(--gold-border);
+            border-radius: 6px;
+            padding: 1px 6px;
+            font-weight: 700;
+            font-size: clamp(0.82rem, 1.75dvh, 0.9rem);
+            color: var(--gold-text);
+        }
+
+        /* NÚT BẤM NỔI KHỐI CỔ ĐIỂN */
+        button {
+            font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+            border: none;
+            border-radius: 11px;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 0.5rem;
-            min-height: 2rem;
+            gap: 7px;
+            font-weight: 700;
+            touch-action: manipulation;
+            user-select: none;
+            transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.15s ease;
         }
 
-        .status-dot {
-            width: 13px;
-            height: 13px;
-            border-radius: 50%;
-            background-color: #B0BEC5;
-            transition: all 0.3s ease;
+        button:active:not(:disabled) {
+            transform: translateY(2px);
         }
 
-        .status-dot.active {
-            background-color: #00A86B; 
-            box-shadow: 0 0 12px #00A86B;
-            animation: pulse-dot 1.5s infinite;
-        }
-
-        @keyframes pulse-dot {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 168, 107, 0.7); }
-            70% { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(0, 168, 107, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 168, 107, 0); }
-        }
-
-        .status-text { 
-            font-size: 1.05rem; 
-            color: #666; 
-            font-style: italic; 
-        }
-
+        /* 3 NÚT DẤU CÂU */
         .punc-grid {
+            flex-shrink: 0;
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 6px;
-            margin-bottom: 10px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
         }
 
         .btn-punc {
-            background-color: #E8F5E9;
-            color: #1B5E20;
-            border: 1px solid #A5D6A7;
-            border-radius: 8px;
-            padding: 8px 4px;
-            font-size: 1.05rem;
-            font-weight: 700;
-            cursor: pointer;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-            transition: all 0.15s ease;
+            background-color: var(--bg-paper);
+            color: var(--ink-primary);
+            border: 2px solid var(--border-dark-bronze);
+            box-shadow: 0 3px 0 var(--border-dark-bronze);
+            padding: clamp(8px, 1.2dvh, 11px) 4px;
+            font-size: clamp(0.98rem, 2.1dvh, 1.1rem);
         }
 
         .btn-punc:active {
-            background-color: #C8E6C9;
-            transform: scale(0.95);
+            background-color: #EFE8D8;
+            box-shadow: 0 1px 0 var(--border-dark-bronze);
         }
 
-        .btn-punc-wide {
-            grid-column: span 1;
+        /* KHUNG GIẤY TỰ CO GIÃN THEO MÀN HÌNH */
+        .text-box {
+            flex: 1 1 0%;
+            min-height: 60px;
+            width: 100%;
+            font-family: 'Lora', Georgia, 'Times New Roman', serif;
+            font-size: clamp(20px, 3.2dvh, 24px);
+            font-weight: 500;
+            line-height: 1.55;
+            padding: 10px 12px;
+            border-radius: 11px;
+            border: 2px solid var(--border-dark-bronze);
+            background-color: var(--bg-paper);
+            box-shadow: inset 0 0 0 2px var(--bg-paper), inset 0 0 0 3px #E6DEC8, 0 2px 6px rgba(44, 34, 20, 0.07);
+            resize: none;
+            overflow-y: auto;
+            color: var(--ink-primary);
+            white-space: pre-wrap;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .text-box { 
-            width: 100%; 
-            flex-grow: 1;
-            min-height: 250px;
-            font-size: 28px; 
-            line-height: 1.6; 
-            padding: 1.2rem; 
-            border-radius: 12px; 
-            border: 2px solid #DCD7C9; 
-            background-color: #FFFFFF; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
-            resize: none; 
-            color: #1A1A1A; 
-            box-sizing: border-box;
-            transition: border-color 0.4s ease, box-shadow 0.4s ease;
-            white-space: pre-wrap; 
+        .text-box::placeholder {
+            font-family: 'Lora', Georgia, serif;
+            font-style: italic;
+            color: #7D7060;
         }
-        
-        .text-box:focus { outline: none; border-color: #A3C1AD; }
-        
-        .recording-jade { 
-            border-color: #00A86B !important; 
-            box-shadow: 0 0 18px rgba(0, 168, 107, 0.35) !important; 
+
+        .text-box:focus {
+            outline: none;
+            border-color: var(--navy-main);
         }
-        
-        .controls-edit {
+
+        .text-box.recording-active {
+            border-color: var(--jade-main) !important;
+            box-shadow: inset 0 0 0 2px var(--bg-paper), inset 0 0 0 3px #B8DFCE, 0 0 12px rgba(27, 107, 77, 0.25) !important;
+        }
+
+        /* NÚT THU ÂM CHÍNH */
+        .btn-record-main {
+            flex-shrink: 0;
+            width: 100%;
+            padding: clamp(12px, 1.9dvh, 16px) 12px;
+            font-size: clamp(1.18rem, 2.5dvh, 1.35rem);
+            letter-spacing: 0.3px;
+            color: #FFFDF8;
+            background-color: var(--jade-main);
+            border: 1.5px solid var(--jade-shadow);
+            box-shadow: 0 3px 0 var(--jade-shadow);
+        }
+
+        .btn-record-main:active {
+            box-shadow: 0 1px 0 var(--jade-shadow);
+        }
+
+        .btn-record-main.stop-mode {
+            background-color: var(--crimson-main);
+            border-color: var(--crimson-shadow);
+            box-shadow: 0 3px 0 var(--crimson-shadow);
+        }
+
+        .btn-record-main.stop-mode:active {
+            box-shadow: 0 1px 0 var(--crimson-shadow);
+        }
+
+        /* NÚT COPY TOÀN BỘ */
+        .btn-copy-main {
+            flex-shrink: 0;
+            width: 100%;
+            padding: clamp(11px, 1.7dvh, 14px) 12px;
+            font-size: clamp(1.1rem, 2.3dvh, 1.24rem);
+            background-color: var(--navy-main);
+            color: #FFFDF8;
+            border: 1.5px solid var(--navy-shadow);
+            box-shadow: 0 3px 0 var(--navy-shadow);
+        }
+
+        .btn-copy-main:active {
+            box-shadow: 0 1px 0 var(--navy-shadow);
+        }
+
+        .btn-copy-main.copied {
+            background-color: var(--jade-main);
+            border-color: var(--jade-shadow);
+            box-shadow: 0 3px 0 var(--jade-shadow);
+        }
+
+        /* HÀNG SỬA LỖI GỌN GÀNG (3 NÚT) */
+        .edit-row {
+            flex-shrink: 0;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 12px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 2px;
         }
 
-        .controls-main { 
-            display: grid;
-            grid-template-columns: 1fr 1fr; 
-            gap: 10px; 
-            margin-top: 10px; 
+        .btn-edit {
+            padding: clamp(9px, 1.3dvh, 12px) 4px;
+            font-size: clamp(0.9rem, 1.9dvh, 1rem);
         }
-        
-        button { 
-            font-size: 1.2rem; 
-            padding: 15px 10px; 
-            border: none; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            gap: 8px; 
-            transition: all 0.2s ease; 
-            font-weight: 600; 
-            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+
+        .btn-delete-word {
+            background-color: #E8DFCE;
+            color: var(--ink-primary);
+            border: 1.5px solid #9E8E72;
+            box-shadow: 0 3px 0 #9E8E72;
         }
-        
-        button:active { transform: translateY(2px); }
-        button:disabled { opacity: 0.4; cursor: not-allowed; }
-        
-        .btn-start { background-color: #00A86B; color: white; grid-column: 1 / -1; font-size: 1.4rem; padding: 18px 15px;} 
-        .btn-stop { background-color: #E57373; color: white; }
-        .btn-copy { background-color: #64B5F6; color: white; }
-        .btn-save { background-color: #FFB74D; color: #333; }
-        .btn-open { background-color: #BA68C8; color: white; }
 
-        .btn-delete-word { background-color: #ECEFF1; color: #37474F; border: 1px solid #CFD8DC; }
-        .btn-clear-all { background-color: #D32F2F; color: white; } 
-        .btn-undo { background-color: #78909C; color: white; }
+        .btn-delete-word:active {
+            box-shadow: 0 1px 0 #9E8E72;
+        }
 
-        @media (max-width: 600px) {
-            h1 { font-size: 1.4rem; }
-            .text-box { font-size: 24px; padding: 0.8rem; }
-            .punc-grid { grid-template-columns: repeat(5, 1fr); gap: 4px; }
-            .btn-punc { font-size: 0.95rem; padding: 7px 2px; }
-            .controls-main { grid-template-columns: 1fr; gap: 8px; }
-            .btn-start { grid-column: auto; } 
-            button { padding: 14px 10px; font-size: 1.15rem; }
+        .btn-undo {
+            background-color: #F6E7C1;
+            color: #5C3D0C;
+            border: 1.5px solid #C29138;
+            box-shadow: 0 3px 0 #C29138;
+        }
+
+        .btn-undo:active:not(:disabled) {
+            box-shadow: 0 1px 0 #C29138;
+        }
+
+        .btn-undo:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-clear-all {
+            background-color: #F7DFDC;
+            color: #8A1515;
+            border: 1.5px solid #C6736C;
+            box-shadow: 0 3px 0 #C6736C;
+        }
+
+        .btn-clear-all:active {
+            box-shadow: 0 1px 0 #C6736C;
+        }
+
+        /* KHI BÀN PHÍM ĐIỆN THOẠI BẬT LÊN */
+        @media (max-height: 460px) {
+            .classic-header,
+            .elderly-guide {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Soạn Thảo Bằng Giọng Nói</h1>
-        
-        <div class="status-container">
-            <div id="statusDot" class="status-dot"></div>
-            <div id="statusText" class="status-text">Sẵn sàng. Hãy bấm "Bắt đầu nói".</div>
+        <!-- TIÊU ĐỀ CỔ ĐIỂN -->
+        <div class="classic-header">
+            <h1><i class="fas fa-feather-alt"></i> Sổ Tay Giọng Nói Tiếng Việt</h1>
         </div>
 
-        <div class="punc-grid">
-            <button class="btn-punc" onclick="insertSymbol('.')">. Chấm</button>
-            <button class="btn-punc" onclick="insertSymbol(',')">, Phẩy</button>
-            <button class="btn-punc" onclick="insertSymbol('?')">? Hỏi</button>
-            <button class="btn-punc" onclick="insertSymbol('!')">! Than</button>
-            <button class="btn-punc" onclick="insertSymbol(':')">: Hai chấm</button>
-            
-            <button class="btn-punc" onclick="insertSymbol('...')">... Ba chấm</button>
-            <button class="btn-punc" onclick="insertSymbol('\"')">" "</button>
-            <button class="btn-punc" onclick="insertSymbol('()')">( )</button>
-            <button class="btn-punc btn-punc-wide" onclick="insertSymbol('\n- ')">- Gạch dòng</button>
-            <button class="btn-punc btn-punc-wide" onclick="insertSymbol('\n')">↵ Xuống dòng</button>
+        <!-- KHUNG TRẠNG THÁI -->
+        <div id="statusBanner" class="status-banner">
+            <div class="status-indicator"></div>
+            <div class="status-content">
+                <div id="statusTitle" class="status-title">ĐANG TẠM DỪNG</div>
+                <div id="statusSub" class="status-sub">Bấm nút XANH LÁ bên dưới để bắt đầu nói</div>
+            </div>
         </div>
 
-        <textarea id="resultText" class="text-box" placeholder="Chữ sẽ hiện ra ngay khi bạn nói..."></textarea>
-        
-        <div class="controls-edit">
-            <button id="btnDeleteWord" class="btn-delete-word"><i class="fas fa-backspace"></i> Xóa 1 từ</button>
-            <button id="btnClearAll" class="btn-clear-all"><i class="fas fa-times-circle"></i> Xóa tất cả (X)</button>
+        <!-- GHI CHÚ GỌN CHO NGƯỜI CAO TUỔI -->
+        <div class="elderly-guide">
+            <span class="guide-label"><i class="fas fa-book-open"></i> Đọc lệnh:</span>
+            <div class="guide-badges">
+                <span class="badge-cmd">"Chấm" → .</span>
+                <span class="badge-cmd">"Phẩy" → ,</span>
+                <span class="badge-cmd">"Xuống dòng" → ↵</span>
+            </div>
         </div>
 
-        <div class="controls-main">
-            <button id="btnStart" class="btn-start"><i class="fas fa-microphone"></i> Bắt đầu nói</button>
-            <button id="btnStop" class="btn-stop" disabled><i class="fas fa-stop-circle"></i> Ngừng lại</button>
-            <button id="btnCopy" class="btn-copy"><i class="fas fa-copy"></i> Copy chữ</button>
-            <button id="btnSave" class="btn-save"><i class="fas fa-file-download"></i> Tải bản thảo về</button>
-            <button id="btnOpen" class="btn-open"><i class="fas fa-folder-open"></i> Mở bản thảo đã lưu</button>
-            <button id="btnUndo" class="btn-undo" style="display: none; grid-column: 1 / -1;"><i class="fas fa-undo"></i> Khôi phục lại chữ vừa xóa</button>
+        <!-- 3 NÚT DẤU CÂU CƠ BẢN -->
+        <div class="punc-grid" id="puncGrid">
+            <button type="button" class="btn-punc" data-symbol=".">. Chấm</button>
+            <button type="button" class="btn-punc" data-symbol=",">, Phẩy</button>
+            <button type="button" class="btn-punc" data-symbol="&#10;">↵ Xuống dòng</button>
         </div>
 
-        <input type="file" id="fileInput" accept=".txt" style="display: none;">
+        <!-- KHUNG GIẤY VĂN BẢN -->
+        <textarea id="resultText" class="text-box" placeholder="Bấm 'Bắt đầu nói', chữ sẽ hiện lên trang giấy này..."></textarea>
+
+        <!-- NÚT THU ÂM CHÍNH -->
+        <button type="button" id="btnToggleRecord" class="btn-record-main">
+            <i class="fas fa-microphone"></i> BẮT ĐẦU NÓI
+        </button>
+
+        <!-- NÚT COPY -->
+        <button type="button" id="btnCopy" class="btn-copy-main">
+            <i class="fas fa-copy"></i> COPY TOÀN BỘ CHỮ
+        </button>
+
+        <!-- HÀNG NÚT SỬA GỌN -->
+        <div class="edit-row">
+            <button type="button" id="btnDeleteWord" class="btn-edit btn-delete-word">
+                <i class="fas fa-backspace"></i> Xóa 1 từ
+            </button>
+            <button type="button" id="btnUndo" class="btn-edit btn-undo" disabled>
+                <i class="fas fa-undo"></i> Khôi phục
+            </button>
+            <button type="button" id="btnClearAll" class="btn-edit btn-clear-all">
+                <i class="fas fa-trash-alt"></i> Xóa hết
+            </button>
+        </div>
     </div>
 
     <script>
         const resultText = document.getElementById('resultText');
-        const btnStart = document.getElementById('btnStart');
-        const btnStop = document.getElementById('btnStop');
+        const statusBanner = document.getElementById('statusBanner');
+        const statusTitle = document.getElementById('statusTitle');
+        const statusSub = document.getElementById('statusSub');
+        const btnToggleRecord = document.getElementById('btnToggleRecord');
         const btnCopy = document.getElementById('btnCopy');
-        const btnSave = document.getElementById('btnSave');
-        const btnOpen = document.getElementById('btnOpen');
-        const fileInput = document.getElementById('fileInput');
         const btnDeleteWord = document.getElementById('btnDeleteWord');
-        const btnClearAll = document.getElementById('btnClearAll');
         const btnUndo = document.getElementById('btnUndo');
-        const statusText = document.getElementById('statusText');
-        const statusDot = document.getElementById('statusDot');
+        const btnClearAll = document.getElementById('btnClearAll');
+        const puncGrid = document.getElementById('puncGrid');
 
+        const STORAGE_KEY = 'voiceDraftVietnamese_classic_v3';
         let isManuallyStopped = true;
-        let baseText = ''; 
-        let undoHistory = ''; 
+        let ignoreNextOnEnd = false;
+        let lastTapTime = 0;
+        let baseText = '';
+        let undoHistory = '';
+        let wakeLock = null;
+        let copyTimeout = null;
+        let cmdFeedbackTimeout = null;
 
-        function notify(message, color) {
-            statusText.innerHTML = message;
-            statusText.style.color = color || "#666";
+        function setStatus(state, title, sub) {
+            statusBanner.classList.remove('is-recording', 'is-error');
+            if (state === 'recording') {
+                statusBanner.classList.add('is-recording');
+                resultText.classList.add('recording-active');
+                btnToggleRecord.classList.add('stop-mode');
+                btnToggleRecord.innerHTML = '<i class="fas fa-stop-circle"></i> NGỪNG THU ÂM';
+            } else {
+                if (state === 'error') statusBanner.classList.add('is-error');
+                resultText.classList.remove('recording-active');
+                btnToggleRecord.classList.remove('stop-mode');
+                btnToggleRecord.innerHTML = '<i class="fas fa-microphone"></i> BẮT ĐẦU NÓI';
+            }
+            statusTitle.textContent = title;
+            statusSub.textContent = sub;
         }
 
+        function flashCommandConfirmation(cmdLabel) {
+            if (isManuallyStopped) return;
+            statusSub.textContent = `✓ Đã tự động thực hiện lệnh: ${cmdLabel}`;
+            clearTimeout(cmdFeedbackTimeout);
+            cmdFeedbackTimeout = setTimeout(() => {
+                if (!isManuallyStopped) {
+                    statusSub.textContent = 'Đọc "chấm", "phẩy", "xuống dòng" để ngắt câu';
+                }
+            }, 2200);
+        }
+
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator && !wakeLock) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    wakeLock.addEventListener('release', () => { wakeLock = null; });
+                }
+            } catch (e) {}
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock) {
+                wakeLock.release().catch(() => {});
+                wakeLock = null;
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && !isManuallyStopped) {
+                requestWakeLock();
+            }
+        });
+
+        // KHÓA CHẶT 100% LỆNH: "CHẤM", "PHẨY", "XUỐNG DÒNG" / "XUỐNG HÀNG"
+        function parseSpokenCommands(rawText) {
+            if (!rawText) return { text: '', triggeredCmd: null };
+
+            // Chuẩn hóa Unicode NFC để bắt chính xác dấu tiếng Việt trên mọi máy
+            let str = rawText.normalize('NFC').trim();
+            let triggeredCmd = null;
+
+            // 1. Trường hợp đọc riêng lẻ 1 lệnh
+            if (/^[.,!?]*\s*(?:dấu\s+)?chấm\s*[.,!?]*$/i.test(str)) {
+                return { text: '.', triggeredCmd: 'Dấu chấm (.)' };
+            }
+            if (/^[.,!?]*\s*(?:dấu\s+)?phẩy\s*[.,!?]*$/i.test(str)) {
+                return { text: ',', triggeredCmd: 'Dấu phẩy (,)' };
+            }
+            if (/^[.,!?]*\s*xuống\s+(?:dòng|hàng)\s*[.,!?]*$/i.test(str)) {
+                return { text: '\n', triggeredCmd: 'Xuống dòng (↵)' };
+            }
+
+            // 2. Cụm "chấm xuống dòng" hoặc "phẩy xuống dòng"
+            str = str.replace(/[.,!?]*\s*(?:dấu\s+)?chấm[.,!?]*\s*xuống\s+(?:dòng|hàng)(?=$|[\s.,!?])[.,!?]*/gi, () => {
+                triggeredCmd = 'Dấu chấm & Xuống dòng (. ↵)';
+                return '.\n';
+            });
+
+            str = str.replace(/[.,!?]*\s*(?:dấu\s+)?phẩy[.,!?]*\s*xuống\s+(?:dòng|hàng)(?=$|[\s.,!?])[.,!?]*/gi, () => {
+                triggeredCmd = 'Dấu phẩy & Xuống dòng (, ↵)';
+                return ',\n';
+            });
+
+            // 3. Lệnh "xuống dòng" / "xuống hàng" bất kỳ vị trí nào (khử dấu tự động thừa của Google phía trước)
+            str = str.replace(/[.,!?]*\s*xuống\s+(?:dòng|hàng)(?=$|[\s.,!?])[.,!?]*/gi, () => {
+                triggeredCmd = 'Xuống dòng (↵)';
+                return '\n';
+            });
+
+            // 4. Lệnh "chấm" bất kỳ vị trí nào (không ngoại lệ)
+            str = str.replace(/(?:^|[.,!?]*\s+)(?:dấu\s+)?chấm(?=$|[\s.,!?])[.,!?]*/gi, () => {
+                if (!triggeredCmd) triggeredCmd = 'Dấu chấm (.)';
+                return '.';
+            });
+
+            // 5. Lệnh "phẩy" bất kỳ vị trí nào (không ngoại lệ)
+            str = str.replace(/(?:^|[.,!?]*\s+)(?:dấu\s+)?phẩy(?=$|[\s.,!?])[.,!?]*/gi, () => {
+                if (!triggeredCmd) triggeredCmd = 'Dấu phẩy (,)';
+                return ',';
+            });
+
+            // Làm sạch khoảng trắng và chống trùng dấu
+            str = str.replace(/[ ]+([.,\n])/g, '$1');
+            str = str.replace(/\n[ ]+/g, '\n');
+            str = str.replace(/\.{2,}/g, '.');
+            str = str.replace(/,{2,}/g, ',');
+            str = str.replace(/([.,])([^\s\n.,])/g, '$1 $2');
+            str = str.replace(/[ ]{2,}/g, ' ');
+
+            return { text: str, triggeredCmd };
+        }
+
+        // Ghép đoạn mới vào văn bản gốc sạch sẽ, không trùng dấu
+        function mergeTextCleanly(base, addition, addTrailingSpaceAfterPunc) {
+            if (!addition) return base;
+            let result = base;
+
+            if (/^[.,]/.test(addition)) {
+                // Nếu câu trước đã có dấu chấm/phẩy ở cuối thì thay thế gọn, tránh thành ".."
+                result = result.replace(/[ .,]+$/, '') + addition;
+            } else if (/^\n/.test(addition)) {
+                result = result.replace(/[ ]+$/, '') + addition;
+            } else {
+                if (result && !result.endsWith(' ') && !result.endsWith('\n')) {
+                    result += ' ';
+                }
+                result += addition;
+            }
+
+            if (addTrailingSpaceAfterPunc && /[.,]$/.test(result)) {
+                result += ' ';
+            }
+            return result;
+        }
+
+        // Tự động viết hoa đầu câu tiếng Việt và đầu dòng mới
         function autoCapitalize(text) {
             if (!text) return text;
             let str = text.charAt(0).toUpperCase() + text.slice(1);
-            return str.replace(/([\.\?!\n]\s*|\n-\s*)([a-zàáảãạăắằẳẵặâấầẩẫậeéèẻẽẹêếềểễệiíìỉĩịoóòỏõọôốồổỗộơớờởỡợuúùủũụưứừửữựyýỳỷỹỵdđ])/gi, function(m, p1, p2) {
+            return str.replace(/([\.\?!\n]\s*)([a-zàáảãạăắằẳẵặâấầẩẫậeéèẻẽẹêếềểễệiíìỉĩịoóòỏõọôốồổỗộơớờởỡợuúùủũụưứừửữựyýỳỷỹỵdđ])/gi, function(m, p1, p2) {
                 return p1 + p2.toUpperCase();
             });
         }
 
-        function insertSymbol(symbol) {
-            saveStateForUndo();
-            let text = resultText.value;
-
-            if (symbol === '()') {
-                text = text.trimEnd() + ' ()';
-            } else if (symbol === '"') {
-                text = text.trimEnd() + ' ""';
-            } else if (['.', ',', '?', '!', ':', '...'].includes(symbol)) {
-                text = text.trimEnd() + symbol + ' ';
-            } else {
-                text += symbol;
-            }
-
-            text = autoCapitalize(text);
-            resultText.value = text;
-            baseText = text;
-            localStorage.setItem('voiceDraftForElderly', text);
-            resetMicrophoneIfListening();
-            notify(`Đã chèn ký hiệu: <b>${symbol.replace('\n', 'Xuống dòng')}</b>`, "#00A86B");
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedDraft = localStorage.getItem('voiceDraftForElderly');
-            if (savedDraft && savedDraft.trim() !== '') {
-                resultText.value = savedDraft;
-                baseText = savedDraft;
-                notify("Đã tự động mở lại bài viết bạn đang làm dở.", "#00A86B");
-            }
-        });
-
         function saveStateForUndo() {
             undoHistory = resultText.value;
-            btnUndo.style.display = 'flex';
+            btnUndo.disabled = false;
+        }
+
+        function saveDraft(text) {
+            localStorage.setItem(STORAGE_KEY, text);
         }
 
         function resetMicrophoneIfListening() {
             if (!isManuallyStopped && recognition) {
-                try { recognition.abort(); } catch(e) {}
+                ignoreNextOnEnd = true;
+                try { recognition.abort(); } catch (e) {}
             }
         }
 
-        resultText.addEventListener('input', () => {
-            baseText = resultText.value;
-            localStorage.setItem('voiceDraftForElderly', resultText.value);
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedDraft = localStorage.getItem(STORAGE_KEY);
+            if (savedDraft && savedDraft.trim() !== '') {
+                resultText.value = savedDraft;
+                baseText = savedDraft;
+                setStatus('idle', 'ĐÃ MỞ LẠI BÀI ĐANG VIẾT', 'Bấm nút XANH LÁ để nói tiếp hoặc bấm Copy');
+            }
+        });
+
+        puncGrid.addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-punc');
+            if (!btn) return;
+
+            const symbol = btn.getAttribute('data-symbol');
+            saveStateForUndo();
+
+            const start = resultText.selectionStart ?? resultText.value.length;
+            const end = resultText.selectionEnd ?? resultText.value.length;
+            let before = resultText.value.substring(0, start).replace(/[ ]+$/, '');
+            let after = resultText.value.substring(end);
+
+            const insertStr = (symbol === '\n') ? '\n' : (symbol + ' ');
+            const combined = autoCapitalize(before + insertStr + after);
+
+            resultText.value = combined;
+            baseText = combined;
+            saveDraft(combined);
+
+            const newPos = Math.min(before.length + insertStr.length, combined.length);
+            resultText.setSelectionRange(newPos, newPos);
+
             resetMicrophoneIfListening();
         });
 
+        resultText.addEventListener('input', () => {
+            baseText = resultText.value;
+            saveDraft(baseText);
+            resetMicrophoneIfListening();
+        });
+
+        // Nhận diện giọng nói chuyên biệt Tiếng Việt
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
 
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
-            // ĐỔI SANG FALSE ĐỂ DIỆT SẠCH LỖI LẶP CHỮ TRÊN CHROME ANDROID
-            recognition.continuous = false; 
-            recognition.interimResults = true; 
             recognition.lang = 'vi-VN';
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.maxAlternatives = 1;
 
             let currentSessionFinal = '';
 
             recognition.onstart = function() {
-                notify("Đang thu âm... <br><span style='font-size: 0.95rem;'>(Cứ nói từ từ, dừng lại ngẫm nghĩ máy vẫn đợi)</span>", "#00A86B");
-                statusDot.classList.add('active');
-                resultText.classList.add('recording-jade');
-                
                 currentSessionFinal = '';
-                btnStart.disabled = true;
-                btnStop.disabled = false;
+                setStatus('recording', 'ĐANG THU ÂM — MỜI NÓI...', 'Đọc "chấm", "phẩy", "xuống dòng" để ngắt câu');
             };
 
             recognition.onresult = function(event) {
@@ -335,17 +701,16 @@
                 let textToShow = baseText;
 
                 if (currentSessionFinal.trim()) {
-                    if (textToShow && !textToShow.endsWith(' ') && !textToShow.endsWith('\n')) {
-                        textToShow += ' ';
+                    const parsed = parseSpokenCommands(currentSessionFinal);
+                    textToShow = mergeTextCleanly(textToShow, parsed.text, true);
+                    if (parsed.triggeredCmd) {
+                        flashCommandConfirmation(parsed.triggeredCmd);
                     }
-                    textToShow += currentSessionFinal.trim();
                 }
 
                 if (interim.trim()) {
-                    if (textToShow && !textToShow.endsWith(' ') && !textToShow.endsWith('\n')) {
-                        textToShow += ' ';
-                    }
-                    textToShow += interim.trim();
+                    const parsedInterim = parseSpokenCommands(interim);
+                    textToShow = mergeTextCleanly(textToShow, parsedInterim.text, false);
                 }
 
                 textToShow = autoCapitalize(textToShow);
@@ -354,45 +719,102 @@
             };
 
             recognition.onend = function() {
-                // CHỐT CÂU VÀO BASETEXT KHI KẾT THÚC PHIÊN VỪA NÓI
-                baseText = resultText.value;
-                localStorage.setItem('voiceDraftForElderly', baseText);
+                if (ignoreNextOnEnd) {
+                    ignoreNextOnEnd = false;
+                    if (!isManuallyStopped) {
+                        setTimeout(() => {
+                            if (!isManuallyStopped) {
+                                try { recognition.start(); } catch (e) {}
+                            }
+                        }, 150);
+                    }
+                    return;
+                }
 
-                // TỰ ĐỘNG KHỞI ĐỘNG LẠI PHIÊN MỚI TINH SẠCH MỖI KHI TỰ NGẮT/NGẬP NGỪNG
+                baseText = resultText.value;
+                saveDraft(baseText);
+
                 if (!isManuallyStopped) {
-                    try { recognition.start(); } catch (e) {}
+                    setTimeout(() => {
+                        if (!isManuallyStopped) {
+                            try { recognition.start(); } catch (e) {}
+                        }
+                    }, 150);
                 } else {
-                    notify("Đã ngừng. Bạn có thể sửa hoặc bấm Copy.", "#666");
-                    statusDot.classList.remove('active');
-                    resultText.classList.remove('recording-jade');
-                    btnStart.disabled = false;
-                    btnStop.disabled = true;
+                    releaseWakeLock();
+                    setStatus('idle', 'ĐÃ NGỪNG THU ÂM', 'Bạn có thể đọc lại, sửa chữ hoặc bấm Copy');
                 }
             };
 
             recognition.onerror = function(event) {
-                if (event.error === 'not-allowed') {
-                    notify("Lỗi: Chưa cấp quyền sử dụng Micro.", "red");
+                if (event.error === 'no-speech' || event.error === 'aborted') {
+                    return;
+                }
+                if (event.error === 'not-allowed' || event.error === 'network' || event.error === 'audio-capture') {
                     isManuallyStopped = true;
-                    statusDot.classList.remove('active');
-                    resultText.classList.remove('recording-jade');
-                    btnStart.disabled = false;
-                    btnStop.disabled = true;
+                    releaseWakeLock();
+                    const msg = event.error === 'network'
+                        ? 'Mất kết nối Wi-Fi / 4G. Vui lòng kiểm tra lại mạng.'
+                        : 'Chưa cấp quyền Micro hoặc Micro đang bận.';
+                    setStatus('error', 'KHÔNG THU ÂM ĐƯỢC', msg);
                 }
             };
         } else {
-            notify("Trình duyệt này không hỗ trợ nhận diện giọng nói.", "red");
-            btnStart.disabled = true;
+            setStatus('error', 'TRÌNH DUYỆT KHÔNG HỖ TRỢ', 'Vui lòng mở trang này bằng trình duyệt Google Chrome.');
+            btnToggleRecord.disabled = true;
         }
 
-        btnClearAll.addEventListener('click', () => {
-            if (resultText.value.trim() !== '') {
-                saveStateForUndo();
-                resultText.value = '';
-                baseText = '';
-                localStorage.removeItem('voiceDraftForElderly');
-                resetMicrophoneIfListening();
-                notify("Đã xóa sạch chữ. (Bấm 'Khôi phục' ở dưới nếu bấm nhầm)", "#D32F2F");
+        btnToggleRecord.addEventListener('click', () => {
+            const now = Date.now();
+            if (now - lastTapTime < 400) return;
+            lastTapTime = now;
+
+            if (isManuallyStopped) {
+                isManuallyStopped = false;
+                baseText = resultText.value;
+                requestWakeLock();
+                try { recognition.start(); } catch (e) {}
+            } else {
+                isManuallyStopped = true;
+                releaseWakeLock();
+                try { recognition.stop(); } catch (e) {}
+                setStatus('idle', 'ĐÃ NGỪNG THU ÂM', 'Bạn có thể đọc lại, sửa chữ hoặc bấm Copy');
+            }
+        });
+
+        btnCopy.addEventListener('click', async () => {
+            const cleanText = resultText.value.trim();
+            if (!cleanText) {
+                setStatus('error', 'CHƯA CÓ CHỮ ĐỂ COPY', 'Hãy bấm nút Bắt đầu nói trước nhé');
+                return;
+            }
+
+            let copied = false;
+            try {
+                await navigator.clipboard.writeText(cleanText);
+                copied = true;
+            } catch (err) {
+                const tempArea = document.createElement('textarea');
+                tempArea.value = cleanText;
+                tempArea.style.position = 'fixed';
+                tempArea.style.opacity = '0';
+                document.body.appendChild(tempArea);
+                tempArea.select();
+                copied = document.execCommand('copy');
+                document.body.removeChild(tempArea);
+            }
+
+            if (copied) {
+                btnCopy.classList.add('copied');
+                btnCopy.innerHTML = '<i class="fas fa-check-circle"></i> ĐÃ COPY XONG! (SẴN SÀNG DÁN)';
+                if (isManuallyStopped) {
+                    setStatus('idle', 'ĐÃ SAO CHÉP TOÀN BỘ CHỮ', 'Mở Zalo hoặc Tin nhắn và bấm Dán để gửi');
+                }
+                clearTimeout(copyTimeout);
+                copyTimeout = setTimeout(() => {
+                    btnCopy.classList.remove('copied');
+                    btnCopy.innerHTML = '<i class="fas fa-copy"></i> COPY TOÀN BỘ CHỮ';
+                }, 3000);
             }
         });
 
@@ -400,81 +822,38 @@
             let text = resultText.value.trimEnd();
             if (text.length > 0) {
                 saveStateForUndo();
-                let lastSpaceIndex = text.lastIndexOf(' ');
-                let newText = (lastSpaceIndex !== -1) ? text.substring(0, lastSpaceIndex) : '';
+                let lastSpaceIndex = Math.max(text.lastIndexOf(' '), text.lastIndexOf('\n'));
+                let newText = (lastSpaceIndex !== -1) ? text.substring(0, lastSpaceIndex + 1) : '';
                 resultText.value = newText;
                 baseText = newText;
-                localStorage.setItem('voiceDraftForElderly', newText);
+                saveDraft(newText);
                 resetMicrophoneIfListening();
-                notify("Đã xóa 1 từ vừa rồi.", "#37474F");
             }
         });
 
         btnUndo.addEventListener('click', () => {
             resultText.value = undoHistory;
             baseText = undoHistory;
-            localStorage.setItem('voiceDraftForElderly', undoHistory);
-            btnUndo.style.display = 'none';
+            saveDraft(undoHistory);
+            btnUndo.disabled = true;
             resetMicrophoneIfListening();
-            notify("Đã khôi phục lại chữ thành công!", "#00A86B");
-        });
-
-        btnSave.addEventListener('click', () => {
-            const text = resultText.value;
-            if (!text.trim()) {
-                notify("Chưa có chữ nào để tải về!", "#E57373");
-                return;
-            }
-            
-            const now = new Date();
-            const dateStr = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
-            const timeStr = `${String(now.getHours()).padStart(2, '0')}h${String(now.getMinutes()).padStart(2, '0')}`;
-            const fileName = `Ban_Thao_${dateStr}_${timeStr}.txt`;
-
-            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = fileName;
-            a.click();
-            URL.revokeObjectURL(a.href);
-            
-            notify(`Đã tải về bản thảo: <b>${fileName}</b>`, "#FF9800");
-        });
-
-        btnOpen.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    resultText.value = evt.target.result;
-                    baseText = evt.target.result;
-                    localStorage.setItem('voiceDraftForElderly', evt.target.result);
-                    notify("Đã mở nội dung bản thảo lên thành công!", "#BA68C8");
-                };
-                reader.readAsText(file, 'UTF-8');
+            if (isManuallyStopped) {
+                setStatus('idle', 'ĐÃ KHÔI PHỤC LẠI CHỮ', 'Nội dung trước đó đã được lấy lại');
             }
         });
 
-        btnStart.addEventListener('click', () => {
-            isManuallyStopped = false;
-            baseText = resultText.value;
-            recognition.start();
-        });
-
-        btnStop.addEventListener('click', () => {
-            isManuallyStopped = true;
-            recognition.stop();
-        });
-
-        btnCopy.addEventListener('click', () => {
-            resultText.select();
-            document.execCommand('copy');
-            window.getSelection().removeAllRanges(); 
-            notify("Đã copy chữ thành công!", "#2196F3");
+        btnClearAll.addEventListener('click', () => {
+            if (!resultText.value.trim()) return;
+            if (confirm('Bạn có chắc muốn xóa hết toàn bộ chữ để viết bài mới không?')) {
+                saveStateForUndo();
+                resultText.value = '';
+                baseText = '';
+                localStorage.removeItem(STORAGE_KEY);
+                resetMicrophoneIfListening();
+                if (isManuallyStopped) {
+                    setStatus('idle', 'ĐÃ XÓA SẠCH CHỮ', 'Nếu bấm nhầm, hãy bấm nút "Khôi phục"');
+                }
+            }
         });
     </script>
 </body>
