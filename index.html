@@ -103,11 +103,11 @@ header{padding-bottom:5px}
 </head>
 <body>
 <main class="app">
-<header><div><h1>Sổ tay giọng nói</h1><p>Nói đến đâu, hiện chữ đến đó</p></div><div class="header-status" id="statusBanner" aria-live="polite"><div class="header-status-line"><span class="led"></span><strong id="statusTitle">Sẵn sàng</strong><span class="timer" id="timer">00:00</span></div><small id="statusSub">Bấm BẮT ĐẦU để lấy chữ.</small></div></header>
+<header><div><h1>Sổ tay giọng nói</h1><p>Nói theo cú pháp : Chấm . - Phẩy , - Xuống Dòng ↵ để tự động thêm dấu câu.</p></div><div class="header-status" id="statusBanner" aria-live="polite"><div class="header-status-line"><span class="led"></span><strong id="statusTitle">Sẵn sàng</strong><span class="timer" id="timer">00:00</span></div><small id="statusSub">Bấm BẮT ĐẦU để lấy chữ.</small></div></header>
 <section class="mode" role="group" aria-label="Chọn chế độ ghi âm"><button type="button" id="modeNormal" aria-pressed="true"><b>🎙 Thu âm thường</b><small>Hiện chữ khi trò chuyện</small></button><button type="button" id="modeLecture" aria-pressed="false"><b>📖 Thu âm bài giảng</b><small>Hiện chữ khi thầy giảng</small></button></section>
 
 <section class="panel" aria-label="Văn bản ghi chép">
-<div class="panel-heading"><strong><span id="liveDot" class="live-dot" aria-hidden="true"></span><span id="liveLabel">Chữ được ghi lại</span></strong><div class="punc"><button type="button" id="btnPeriod">. Chấm</button><button type="button" id="btnComma">, Phẩy</button><button type="button" id="btnNewline">↵ Dòng</button></div></div>
+<div class="panel-heading"><strong><span id="liveDot" class="live-dot" aria-hidden="true"></span><span id="liveLabel">Chữ được ghi lại</span></strong><div class="punc"><button type="button" id="btnPeriod">. Chấm</button><button type="button" id="btnComma">, Phẩy</button><button type="button" id="btnNewline">↵ Xuống Dòng</button></div></div>
 <textarea id="resultText" class="editor" placeholder="Lời nói sẽ hiện thành chữ ở đây ngay khi bạn nói…" spellcheck="true" aria-label="Văn bản ghi chép"></textarea>
 <div class="panel-foot"><span id="stats">0 từ · 0 ký tự</span><button type="button" id="btnSaveText" class="save-text" title="Tải văn bản về máy">↓ Lưu thành file</button><span class="level" title="Mức tiếng micro (không phải điểm chất lượng)"><span id="meter" style="display:block;height:100%;width:0;background:var(--green);border-radius:inherit"></span></span></div>
 </section>
