@@ -59,16 +59,17 @@ header>div:first-child{flex:1 1 auto;min-width:0}
 @media(max-width:440px){h1{font-size:clamp(17px,4.6vw,22px)}header p{font-size:10px}.header-status{max-width:52%}.mode button{min-height:58px;padding:7px 5px}.mode{gap:6px}}
 @media(max-height:680px){.mode button{min-height:50px;padding:6px}.mode small{font-size:10px}.header-status small{display:none}}
 @media(max-height:510px){.mode button{min-height:42px}.mode small{display:none}}
+.panel-heading strong{display:flex;align-items:center;gap:7px}.live-dot{display:inline-block;width:8px;height:8px;border-radius:100%;background:#a69c8e;flex-shrink:0}.live-dot.on{background:#1b6b4d;animation:pulse 1.5s infinite}.save-text{border:1px solid var(--line);border-radius:7px;background:#f4efe5;color:var(--ink);font-size:12px;padding:5px 8px;font-weight:700;white-space:nowrap}.save-text:active{transform:scale(.98)}.panel-foot{gap:7px}.level{flex-shrink:0;width:62px}@media(max-width:365px){.panel-foot{font-size:11px}.save-text{font-size:11px;padding:5px 6px}.level{width:36px}}
 </style>
 </head>
 <body>
 <main class="app">
 <header><div><h1>Sổ tay giọng nói</h1><p>Ghi âm và hiện chữ cùng lúc</p></div><div class="header-status" id="statusBanner" aria-live="polite"><div class="header-status-line"><span class="led"></span><strong id="statusTitle">Sẵn sàng</strong><span class="timer" id="timer">00:00</span></div><small id="statusSub">Bấm BẮT ĐẦU để lấy chữ.</small></div></header>
-<section class="mode" role="group" aria-label="Chọn chế độ ghi âm"><button type="button" id="modeNormal" aria-pressed="true"><b>🎙 Thu âm thường</b><small>Trò chuyện, nói hằng ngày</small></button><button type="button" id="modeLecture" aria-pressed="false"><b>📖 Thu âm bài giảng</b><small>Nghe dài, có lúc ngắt quãng</small></button></section>
+<section class="mode" role="group" aria-label="Chọn chế độ ghi âm"><button type="button" id="modeNormal" aria-pressed="true"><b>🎙 Thu âm thường</b><small>Hiện chữ khi trò chuyện</small></button><button type="button" id="modeLecture" aria-pressed="false"><b>📖 Thu âm bài giảng</b><small>Hiện chữ khi thầy giảng</small></button></section>
 <section class="panel" aria-label="Văn bản ghi chép">
-<div class="panel-heading"><strong>Chữ được ghi lại</strong><div class="punc"><button type="button" id="btnPeriod">. Chấm</button><button type="button" id="btnComma">, Phẩy</button><button type="button" id="btnNewline">↵ Dòng</button></div></div>
-<textarea id="resultText" class="editor" placeholder="Bấm BẮT ĐẦU rồi nói bình thường hoặc nghe thầy giảng…" spellcheck="true" aria-label="Văn bản ghi chép"></textarea>
-<div class="panel-foot"><span id="stats">0 từ · 0 ký tự</span><span class="level" title="Mức tiếng micro (không phải điểm chất lượng)"><span id="meter" style="display:block;height:100%;width:0;background:var(--green);border-radius:inherit"></span></span></div>
+<div class="panel-heading"><strong><span id="liveDot" class="live-dot" aria-hidden="true"></span><span id="liveLabel">Chữ được ghi lại</span></strong><div class="punc"><button type="button" id="btnPeriod">. Chấm</button><button type="button" id="btnComma">, Phẩy</button><button type="button" id="btnNewline">↵ Dòng</button></div></div>
+<textarea id="resultText" class="editor" placeholder="Lời nói sẽ hiện thành chữ ở đây ngay khi bạn nói…" spellcheck="true" aria-label="Văn bản ghi chép"></textarea>
+<div class="panel-foot"><span id="stats">0 từ · 0 ký tự</span><button type="button" id="btnSaveText" class="save-text" title="Tải văn bản về máy">↓ Lưu chữ</button><span class="level" title="Mức tiếng micro (không phải điểm chất lượng)"><span id="meter" style="display:block;height:100%;width:0;background:var(--green);border-radius:inherit"></span></span></div>
 </section>
 <button type="button" id="btnToggle" class="primary">● BẮT ĐẦU GHI ÂM + LẤY CHỮ</button>
 <div class="tools"><button id="btnCopy" class="small-btn blue">Sao chép</button><button id="btnDelete" class="small-btn">Xóa 1 từ</button><button id="btnUndo" class="small-btn" disabled>Khôi phục</button><button id="btnNew" class="small-btn danger">Xóa hết</button></div>
@@ -84,7 +85,7 @@ let mode='normal';
 let recording=false,starting=false,stream=null,recorder=null,parts=[],audioUrl=null,startedAt=0,clock=null,audioCtx=null,analyser=null,meterTimer=null,sourceNode=null,recognition=null,recognitionRunning=false,recognitionWanted=false,restartTimer=null,recSeq=0,recText='',draftBase='',pendingFinal='',undo=[],lastError='',editorSize=23,stopRequested=false;
 const storeKey='soTayVoiceVietnamese_v4';
 function toast(message){el.toast.textContent=message;el.toast.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.toast.classList.remove('show'),2400)}
-function status(title,subtitle,kind=''){el.title.textContent=title;el.sub.textContent=subtitle;el.banner.className='header-status'+(kind?' '+kind:'')}
+function status(title,subtitle,kind=''){el.title.textContent=title;el.sub.textContent=subtitle;el.banner.className='header-status'+(kind?' '+kind:'');document.getElementById('liveLabel').textContent=kind==='rec'&&recognitionWanted?'Đang hiện chữ trực tiếp…':(recording?'Bản chữ (đang ghi âm)':'Chữ được ghi lại');document.getElementById('liveDot').classList.toggle('on',kind==='rec'&&recognitionWanted)}
 function stats(){const v=el.box.value;el.stats.textContent=`${v.trim()?v.trim().split(/\s+/u).length:0} từ · ${v.length} ký tự`}
 function save(){try{localStorage.setItem(storeKey,el.box.value)}catch(e){}stats()}
 function pushUndo(){undo.push(el.box.value);if(undo.length>30)undo.shift();el.undo.disabled=false}
@@ -114,7 +115,42 @@ function commitLive(){if(pendingFinal.trim()){draftBase=capitalize(normalize(joi
 function renderLive(interim=''){const confirmed=joinText(draftBase,spoken(pendingFinal));const full=joinText(confirmed,spoken(interim));el.box.value=capitalize(normalize(full));stats();el.box.scrollTop=el.box.scrollHeight}
 function stopASR(){recognitionWanted=false;clearTimeout(restartTimer);const s=recognition;recognition=null;recSeq++;recognitionRunning=false;if(s){try{s.stop()}catch(e){}}}
 function scheduleASR(delay=350){if(!recognitionWanted||!recording)return;clearTimeout(restartTimer);restartTimer=setTimeout(()=>{if(recording&&recognitionWanted&&!recognitionRunning)launchASR()},delay)}
-function launchASR(){if(!SpeechRecognition||!recording||!recognitionWanted||recognitionRunning)return;const seq=++recSeq;const s=new SpeechRecognition();recognition=s;s.lang='vi-VN';s.continuous=(mode==='lecture');s.interimResults=true;s.maxAlternatives=1;let finalText='',interimText='',sessionError='';s.onstart=()=>{if(seq!==recSeq)return;recognitionRunning=true;status(mode==='lecture'?'Đang nghe giảng':'Đang ghi âm',mode==='lecture'?'Nghe liên tục':'Đang lấy chữ','rec')};s.onresult=e=>{if(seq!==recSeq)return;finalText='';interimText='';for(let i=0;i<e.results.length;i++){const v=e.results[i][0].transcript.trim();if(!v)continue;if(e.results[i].isFinal)finalText=joinText(finalText,v);else interimText=joinText(interimText,v)}pendingFinal=finalText;renderLive(interimText)};s.onerror=e=>{if(seq!==recSeq)return;sessionError=e.error;if(['not-allowed','service-not-allowed','audio-capture','network'].includes(e.error)){recognitionWanted=false;status('VẪN ĐANG GHI ÂM','Không thể lấy chữ ('+e.error+'). Hãy lưu bản âm thanh sau khi dừng.','rec')} };s.onend=()=>{if(seq!==recSeq)return;recognitionRunning=false;recognition=null;commitLive();if(!recording)return;if(recognitionWanted){status(mode==='lecture'?'Đang nghe giảng':'Đang ghi âm','Đang nối phiên nghe…','rec');scheduleASR(sessionError==='no-speech'?(mode==='lecture'?250:500):(mode==='lecture'?160:300))}};try{s.start()}catch(e){recognitionRunning=false;scheduleASR(950)}}
+function launchASR(){
+ if(!SpeechRecognition||!recording||!recognitionWanted||recognitionRunning)return;
+ const seq=++recSeq,s=new SpeechRecognition();recognition=s;
+ s.lang='vi-VN';s.continuous=(mode==='lecture');s.interimResults=true;s.maxAlternatives=1;
+ let committed=0,sessionError='';
+ s.onstart=()=>{if(seq!==recSeq)return;recognitionRunning=true;status(mode==='lecture'?'Đang nghe giảng':'Đang nghe nói','Chữ đang hiện trực tiếp','rec')};
+ s.onresult=e=>{
+  if(seq!==recSeq)return;
+  // Ghi nhận ngay các kết quả chắc chắn, không chờ hết phiên nghe.
+  let interim='';
+  for(let i=committed;i<e.results.length;i++){
+   const item=e.results[i],v=(item[0]?.transcript||'').trim();
+   if(item.isFinal){
+    if(v){draftBase=capitalize(normalize(joinText(draftBase,spoken(v))));setText(draftBase)}
+    committed=i+1;
+   }else if(v){interim=joinText(interim,v)}
+  }
+  // Phần đang nói hiện ngay nhưng không lưu thành kết quả cuối để tránh lặp chữ.
+  pendingFinal='';renderLive(interim);
+ };
+ s.onerror=e=>{if(seq!==recSeq)return;sessionError=e.error;
+  if(['not-allowed','service-not-allowed','audio-capture','network'].includes(e.error)){
+   recognitionWanted=false;
+   status('CHƯA LẤY ĐƯỢC CHỮ','Vẫn đang lưu âm thanh; kiểm tra quyền micro / kết nối.','rec');
+  }
+ };
+ s.onend=()=>{if(seq!==recSeq)return;recognitionRunning=false;recognition=null;
+  // Xóa phần chữ tạm chưa được xác nhận nhưng giữ các câu đã ghi nhận.
+  pendingFinal='';setText(draftBase);
+  if(recording&&recognitionWanted){
+   status(mode==='lecture'?'Đang nghe giảng':'Đang nghe nói','Đang nối lượt nghe…','rec');
+   scheduleASR(sessionError==='no-speech'?(mode==='lecture'?300:450):(mode==='lecture'?200:320));
+  }
+ };
+ try{s.start()}catch(e){recognitionRunning=false;scheduleASR(950)}
+}
 function restartASRAfterEdit(){if(!recording||!recognitionWanted)return;stopASR();pendingFinal='';draftBase=el.box.value;recognitionWanted=true;scheduleASR(260)}
 function setupMeter(mic){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audioCtx=new AC();analyser=audioCtx.createAnalyser();analyser.fftSize=1024;sourceNode=audioCtx.createMediaStreamSource(mic);sourceNode.connect(analyser);const buff=new Uint8Array(analyser.fftSize);meterTimer=setInterval(()=>{if(!analyser)return;analyser.getByteTimeDomainData(buff);let sq=0;for(let i=0;i<buff.length;i++){const v=(buff[i]-128)/128;sq+=v*v}const rms=Math.sqrt(sq/buff.length);el.meter.style.width=Math.min(100,Math.round(rms*320))+'%'},130)}catch(e){}}
 function clearMeter(){clearInterval(meterTimer);meterTimer=null;el.meter.style.width='0%';try{sourceNode?.disconnect()}catch(e){}sourceNode=null;analyser=null;audioCtx?.close().catch(()=>{});audioCtx=null}
@@ -129,8 +165,8 @@ function selectMode(next){
  mode=next;
  $('modeNormal').setAttribute('aria-pressed',String(mode==='normal'));
  $('modeLecture').setAttribute('aria-pressed',String(mode==='lecture'));
- el.box.placeholder=mode==='lecture'?'Đặt máy gần thầy giảng. Lời giảng sẽ hiện ở đây…':'Bấm BẮT ĐẦU rồi nói bình thường…';
- status('Sẵn sàng',mode==='lecture'?'Chế độ bài giảng':'Chế độ thu âm thường');
+ el.box.placeholder=mode==='lecture'?'Lời thầy giảng sẽ hiện thành chữ tại đây…':'Bạn nói đến đâu, chữ sẽ hiện đến đó…';
+ status('Sẵn sàng',mode==='lecture'?'Bấm BẮT ĐẦU để hiện chữ bài giảng':'Bấm BẮT ĐẦU để hiện chữ trò chuyện');
 }
 $('modeNormal').onclick=()=>selectMode('normal');
 $('modeLecture').onclick=()=>selectMode('lecture');
@@ -141,6 +177,7 @@ el.box.addEventListener('input',()=>{draftBase=el.box.value;save();restartASRAft
 $('btnDelete').onclick=()=>{if(!el.box.value)return;pushUndo();const t=el.box.value.trimEnd();setText(t.replace(/(?:^|\s)\S+$/u,''));restartASRAfterEdit()};
 el.undo.onclick=()=>{if(!undo.length)return;setText(undo.pop());el.undo.disabled=!undo.length;restartASRAfterEdit()};
 $('btnNew').onclick=()=>{if(!el.box.value.trim())return;if(!confirm('Xóa toàn bộ chữ? Bản ghi âm đang thu không bị xóa.'))return;pushUndo();setText('');restartASRAfterEdit()};
+$('btnSaveText').onclick=()=>{const content=el.box.value.trim();if(!content){toast('Chưa có chữ để lưu.');return}const blob=new Blob(['\uFEFF'+content],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename('txt');document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);toast('Đã tạo file chữ. Hãy lưu vào máy.')};
 $('btnCopy').onclick=async()=>{if(!el.box.value.trim()){toast('Chưa có chữ để sao chép.');return}try{await navigator.clipboard.writeText(el.box.value);toast('Đã sao chép toàn bộ chữ.')}catch(e){el.box.focus();el.box.select();try{document.execCommand('copy');toast('Đã sao chép chữ.')}catch(_){toast('Không sao chép được. Hãy chọn và sao chép thủ công.')}}};
 window.addEventListener('beforeunload',e=>{if(recording){e.preventDefault();e.returnValue='Bạn đang ghi âm. Nếu thoát, bản ghi có thể bị mất.'}});
 try{const prior=localStorage.getItem(storeKey);if(prior){el.box.value=prior;draftBase=prior;status('Đã mở sổ tay','Bản chữ lần trước được khôi phục. Bản ghi âm cần tải riêng.')}}catch(e){}stats();
