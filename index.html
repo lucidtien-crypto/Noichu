@@ -33,10 +33,10 @@ header{flex:none;padding:2px 2px 7px}h1{font-size:clamp(19px,4.3vw,26px)}header 
 .tools{flex:none;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .small-btn{min-height:44px;padding:7px 1px;font-size:clamp(10px,2.7vw,13px);border-radius:9px}
 .audio{flex:none;gap:6px;padding:8px 10px;border-radius:11px}
-.audio-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.audio-head strong{font-size:13px}.audio-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.audio-delete{border:1px solid #c88f89;color:#922020;background:#fff1ef;border-radius:9px;min-height:32px;padding:6px 10px;font-size:12px;font-weight:700}.audio-delete:active{transform:scale(.98)}
+.audio-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.audio-head strong{font-size:13px}
 .audio audio{height:36px}.download{font-size:12px;min-height:32px;padding:6px 9px}
 .audio .note{font-size:11px;line-height:1.25}
-.audio-option{display:flex;align-items:center;justify-content:center;gap:7px;min-height:29px;font-size:13px;color:var(--ink);font-weight:650}.audio-option input{width:18px;height:18px;accent-color:var(--green)}.audio-option span{font-weight:400;color:var(--muted)}.audio-option:has(input:disabled){opacity:.5}.footnote{flex:none;margin:0;color:var(--muted);font-size:clamp(10px,2.6vw,12px);line-height:1.3;text-align:center}
+.footnote{flex:none;margin:0;color:var(--muted);font-size:clamp(10px,2.6vw,12px);line-height:1.3;text-align:center}
 @media (max-height:650px){.app{gap:5px}.status{min-height:46px;padding:6px 9px}.panel-heading{padding:4px 8px}.primary{min-height:49px;padding:8px}.small-btn{min-height:37px}.footnote{font-size:10px}}
 @media (max-height:510px){header p,.footnote{display:none}.status small{display:none}.status{min-height:35px}.primary{min-height:42px}.small-btn{min-height:35px}}
 
@@ -60,29 +60,81 @@ header>div:first-child{flex:1 1 auto;min-width:0}
 @media(max-height:680px){.mode button{min-height:50px;padding:6px}.mode small{font-size:10px}.header-status small{display:none}}
 @media(max-height:510px){.mode button{min-height:42px}.mode small{display:none}}
 .panel-heading strong{display:flex;align-items:center;gap:7px}.live-dot{display:inline-block;width:8px;height:8px;border-radius:100%;background:#a69c8e;flex-shrink:0}.live-dot.on{background:#1b6b4d;animation:pulse 1.5s infinite}.save-text{border:1px solid var(--line);border-radius:7px;background:#f4efe5;color:var(--ink);font-size:12px;padding:5px 8px;font-weight:700;white-space:nowrap}.save-text:active{transform:scale(.98)}.panel-foot{gap:7px}.level{flex-shrink:0;width:62px}@media(max-width:365px){.panel-foot{font-size:11px}.save-text{font-size:11px;padding:5px 6px}.level{width:36px}}
+
+/* Giao diện ghi âm gọn trong một màn hình, khu vực phát nằm dưới cùng */
+.app{gap:clamp(4px,.75dvh,8px)}
+header{padding-bottom:5px}
+.audio-option{min-height:25px;font-size:12px;gap:6px}
+.audio-option input{width:17px;height:17px}
+.mode button{min-height:54px;padding:6px 9px}
+.mode small{margin-top:2px}
+.panel{min-height:55px}
+.primary{min-height:50px;padding:9px 8px}
+.small-btn{min-height:40px;padding:6px 2px}
+.audio{gap:5px;padding:7px 9px;border-radius:11px;box-shadow:0 2px 8px #392c1810}
+.audio-head{min-height:29px}
+.audio-head strong{font-size:clamp(12px,3.1vw,14px)}
+.audio-actions{display:flex;align-items:center;gap:6px}
+.audio .download,.audio-delete{min-height:30px;padding:5px 9px;font-size:12px;border-radius:8px;font-weight:750;white-space:nowrap}
+.audio-delete{border:1px solid #d5afa9;background:#fff1ef;color:var(--red)}
+.audio audio{height:34px;width:100%;display:block}
+@media(max-width:390px){.audio .download,.audio-delete{font-size:11px;padding:5px 7px}.audio-head strong{font-size:12px}}
+@media(max-height:730px){.app{gap:4px}.panel-heading{padding:4px 8px}.panel-foot{padding:4px 8px}.mode button{min-height:48px}.primary{min-height:46px}.small-btn{min-height:36px}.audio audio{height:32px}}
+@media(max-height:600px){header p{display:none}.mode small{display:none}.mode button{min-height:36px}.audio-head strong{font-size:11px}.audio .download,.audio-delete{min-height:26px;padding:3px 6px}}
+.audio-message{margin:2px 0;color:var(--red);font-size:12px;line-height:1.35}.audio[hidden]{display:none}
+/* Trình phát âm thanh luôn hiện ở cuối màn hình: một hàng duy nhất. */
+.audio,.audio.show{display:block!important;flex:0 0 auto;background:#fffdfa;border:1.5px solid var(--line);border-radius:16px;padding:8px 10px;box-shadow:0 2px 8px #382b1710;min-width:0}
+.audio-bar{display:flex;align-items:center;gap:clamp(5px,1vw,12px);width:100%;min-width:0;min-height:39px}
+.audio-title{display:inline-flex;align-items:center;gap:5px;color:var(--ink);font-size:clamp(13px,2.8vw,16px);white-space:nowrap;flex:none}
+.audio-title svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.audio-play{display:grid;place-items:center;flex:none;width:32px;height:32px;border:2px solid var(--green);border-radius:50%;color:var(--green);background:#fff;font-size:14px;font-weight:800;padding:0}
+.audio-seek{flex:1 1 auto;min-width:12px;width:1%;height:18px;accent-color:var(--green);cursor:pointer}
+.audio-time{font-variant-numeric:tabular-nums;white-space:nowrap;font-size:13px;color:var(--ink);flex:none}
+.audio-mute{border:0;background:transparent;font-size:16px;color:var(--ink);padding:3px;flex:none}
+.audio-link{font-size:13px;white-space:nowrap;color:var(--ink);text-decoration:none;font-weight:650;flex:none;padding:5px 3px}
+.audio-remove{border:0;background:transparent;font-size:13px;color:var(--red);white-space:nowrap;font-weight:700;padding:5px 2px;flex:none}
+.audio :disabled,.audio-link[aria-disabled=true]{opacity:.38;cursor:default;pointer-events:none}
+.audio-message{padding:2px 4px 0;margin:0;color:var(--red);font-size:11px;line-height:1.3}
+.audio audio[hidden]{display:none!important}
+@media(max-width:440px){.app{padding-left:6px;padding-right:6px}.audio{padding:7px 7px;border-radius:13px}.audio-bar{gap:5px;flex-wrap:wrap}.audio-title{font-size:12px}.audio-title svg{width:17px;height:17px}.audio-play{width:28px;height:28px;font-size:12px}.audio-time{font-size:11px}.audio-mute{font-size:13px;padding:2px}.audio-link,.audio-remove{font-size:11px}.audio-seek{height:15px}}
+@media(max-width:360px){.audio-title{font-size:11px}.audio-bar{gap:3px}.audio-link,.audio-remove{font-size:10px}.audio-play{width:26px;height:26px}}
+@media(max-height:670px){.audio,.audio.show{padding-top:5px;padding-bottom:5px}.audio-bar{min-height:30px}}
 </style>
 </head>
 <body>
 <main class="app">
 <header><div><h1>Sổ tay giọng nói</h1><p>Nói đến đâu, hiện chữ đến đó</p></div><div class="header-status" id="statusBanner" aria-live="polite"><div class="header-status-line"><span class="led"></span><strong id="statusTitle">Sẵn sàng</strong><span class="timer" id="timer">00:00</span></div><small id="statusSub">Bấm BẮT ĐẦU để lấy chữ.</small></div></header>
 <section class="mode" role="group" aria-label="Chọn chế độ ghi âm"><button type="button" id="modeNormal" aria-pressed="true"><b>🎙 Thu âm thường</b><small>Hiện chữ khi trò chuyện</small></button><button type="button" id="modeLecture" aria-pressed="false"><b>📖 Thu âm bài giảng</b><small>Hiện chữ khi thầy giảng</small></button></section>
-<label class="audio-option"><input type="checkbox" id="captureAudio"> Lưu thêm file âm thanh <span>(tùy chọn)</span></label>
+
 <section class="panel" aria-label="Văn bản ghi chép">
 <div class="panel-heading"><strong><span id="liveDot" class="live-dot" aria-hidden="true"></span><span id="liveLabel">Chữ được ghi lại</span></strong><div class="punc"><button type="button" id="btnPeriod">. Chấm</button><button type="button" id="btnComma">, Phẩy</button><button type="button" id="btnNewline">↵ Dòng</button></div></div>
 <textarea id="resultText" class="editor" placeholder="Lời nói sẽ hiện thành chữ ở đây ngay khi bạn nói…" spellcheck="true" aria-label="Văn bản ghi chép"></textarea>
-<div class="panel-foot"><span id="stats">0 từ · 0 ký tự</span><button type="button" id="btnSaveText" class="save-text" title="Tải văn bản về máy">↓ Lưu chữ</button><span class="level" title="Mức tiếng micro (không phải điểm chất lượng)"><span id="meter" style="display:block;height:100%;width:0;background:var(--green);border-radius:inherit"></span></span></div>
+<div class="panel-foot"><span id="stats">0 từ · 0 ký tự</span><button type="button" id="btnSaveText" class="save-text" title="Tải văn bản về máy">↓ Lưu thành file</button><span class="level" title="Mức tiếng micro (không phải điểm chất lượng)"><span id="meter" style="display:block;height:100%;width:0;background:var(--green);border-radius:inherit"></span></span></div>
 </section>
 <button type="button" id="btnToggle" class="primary">● BẮT ĐẦU HIỆN CHỮ</button>
 <div class="tools"><button id="btnCopy" class="small-btn blue">Sao chép</button><button id="btnDelete" class="small-btn">Xóa 1 từ</button><button id="btnUndo" class="small-btn" disabled>Khôi phục</button><button id="btnNew" class="small-btn danger">Xóa hết</button></div>
-<section class="audio" id="audioPanel" aria-label="Bản ghi âm"><div class="audio-head"><strong>🔊 Bản ghi âm</strong><div class="audio-actions"><a id="btnDownloadAudio" class="download" href="#">↓ Tải xuống</a><button type="button" id="btnDeleteAudio" class="audio-delete">Xóa</button></div></div><audio id="audioPlayer" controls preload="metadata"></audio><p class="note">Bản ghi chỉ nằm tạm trong trang; hãy tải xuống để giữ lại.</p></section>
-<p class="footnote">Giữ màn hình mở khi lấy chữ. Có thể bật lưu âm thanh, nhưng một số điện thoại không hỗ trợ đồng thời hai chức năng.</p>
+<section class="audio" id="audioPanel" aria-label="Bản ghi âm vừa thu">
+  <div class="audio-bar">
+    <strong class="audio-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Zm4 4a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12"/></svg> Bản ghi</strong>
+    <button type="button" id="audioPlay" class="audio-play" disabled aria-label="Phát bản ghi">▶</button>
+    <input type="range" id="audioSeek" class="audio-seek" min="0" max="1000" value="0" disabled aria-label="Vị trí phát bản ghi" />
+    <span class="audio-time" id="audioTime">00:00</span>
+    <button type="button" id="audioMute" class="audio-mute" disabled aria-label="Tắt âm lượng">◖))</button>
+    <a id="btnDownloadAudio" class="audio-link" aria-disabled="true" tabindex="-1">↓ Tải về</a>
+    <button type="button" id="btnDeleteAudio" class="audio-remove" disabled>Xóa</button>
+  </div>
+  <audio id="audioPlayer" preload="metadata" hidden></audio>
+  <p id="audioMessage" class="audio-message" hidden></p>
+</section>
+
 </main><div class="toast" id="toast" role="status"></div>
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
-const el={box:$('resultText'),banner:$('statusBanner'),title:$('statusTitle'),sub:$('statusSub'),timer:$('timer'),meter:$('meter'),toggle:$('btnToggle'),panel:$('audioPanel'),player:$('audioPlayer'),download:$('btnDownloadAudio'),deleteAudio:$('btnDeleteAudio'),stats:$('stats'),toast:$('toast'),undo:$('btnUndo')};
+const el={box:$('resultText'),banner:$('statusBanner'),title:$('statusTitle'),sub:$('statusSub'),timer:$('timer'),meter:$('meter'),toggle:$('btnToggle'),panel:$('audioPanel'),player:$('audioPlayer'),download:$('btnDownloadAudio'),deleteAudio:$('btnDeleteAudio'),audioMessage:$('audioMessage'),stats:$('stats'),toast:$('toast'),undo:$('btnUndo')};
 const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
 let mode='normal';
+let audioCaptureFailure='',audioEverStarted=false;
 let recording=false,starting=false,stream=null,recorder=null,parts=[],audioUrl=null,startedAt=0,clock=null,audioCtx=null,analyser=null,meterTimer=null,sourceNode=null,recognition=null,recognitionRunning=false,recognitionWanted=false,restartTimer=null,recSeq=0,recText='',draftBase='',pendingFinal='',undo=[],lastError='',editorSize=23,stopRequested=false,textOnlyFallback=false,audioRequested=false;
 const storeKey='soTayVoiceVietnamese_v4';
 function toast(message){el.toast.textContent=message;el.toast.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.toast.classList.remove('show'),2400)}
@@ -194,54 +246,98 @@ function clearMeter(){clearInterval(meterTimer);meterTimer=null;el.meter.style.w
 function tick(){const secs=Math.floor((Date.now()-startedAt)/1000);el.timer.textContent=`${String(Math.floor(secs/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`}
 function mimeType(){const types=['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus'];return types.find(t=>MediaRecorder.isTypeSupported(t))||''}
 function filename(ext){const date=new Date();const p=n=>String(n).padStart(2,'0');return `Bai-giang_${date.getFullYear()}-${p(date.getMonth()+1)}-${p(date.getDate())}_${p(date.getHours())}-${p(date.getMinutes())}.${ext}`}
-function showAudio(blob){if(audioUrl)URL.revokeObjectURL(audioUrl);audioUrl=URL.createObjectURL(blob);el.player.src=audioUrl;el.download.href=audioUrl;const ext=blob.type.includes('mp4')?'m4a':blob.type.includes('ogg')?'ogg':'webm';el.download.download=filename(ext);el.download.textContent='↓ Tải xuống ('+(blob.size/1024/1024).toFixed(1)+' MB)';el.panel.classList.add('show');toast('Đã tạo bản ghi. Hãy bấm Tải bản ghi âm để lưu.')}
+const playback={play:$('audioPlay'),seek:$('audioSeek'),time:$('audioTime'),mute:$('audioMute')};
+function formatAudioTime(t){const n=Number.isFinite(t)?Math.max(0,Math.floor(t)):0;return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`}
+function updateAudioControls(){
+ const available=!!audioUrl;
+ playback.play.disabled=!available;playback.seek.disabled=!available;playback.mute.disabled=!available;
+ el.deleteAudio.disabled=!available;
+ el.download.setAttribute('aria-disabled',String(!available));
+ if(available)el.download.removeAttribute('tabindex');else el.download.setAttribute('tabindex','-1');
+ playback.play.textContent=el.player.paused?'▶':'Ⅱ';
+ playback.play.setAttribute('aria-label',el.player.paused?'Phát bản ghi':'Tạm dừng');
+ playback.mute.textContent=el.player.muted?'◖':'◖))';
+ const duration=Number.isFinite(el.player.duration)?el.player.duration:0;
+ playback.seek.value=duration?Math.round((el.player.currentTime/duration)*1000):0;
+ playback.time.textContent=formatAudioTime(el.player.currentTime || 0);
+}
+function clearAudio(notify=false){
+ el.player.pause();el.player.removeAttribute('src');el.player.load();
+ el.download.removeAttribute('href');el.download.removeAttribute('download');
+ el.audioMessage.hidden=true;el.audioMessage.textContent='';
+ if(audioUrl){URL.revokeObjectURL(audioUrl);audioUrl=null;}
+ updateAudioControls();
+ if(notify)toast('Đã xóa bản ghi âm trên trang.');
+}
+function showAudioError(message){
+ if(audioUrl)return;
+ el.audioMessage.hidden=false;el.audioMessage.textContent=message;
+ updateAudioControls();
+}
+function showAudio(blob){
+ if(!blob.size)return;
+ clearAudio();
+ audioUrl=URL.createObjectURL(blob);
+ el.player.src=audioUrl;
+ const ext=blob.type.includes('mp4')?'m4a':blob.type.includes('ogg')?'ogg':'webm';
+ el.download.href=audioUrl;
+ el.download.download=filename(ext);
+ el.audioMessage.hidden=true;
+ updateAudioControls();
+ toast('Đã lưu bản ghi. Bạn có thể nghe, tải hoặc xóa.');
+}
+playback.play.onclick=async()=>{if(!audioUrl)return;if(el.player.paused){try{await el.player.play()}catch(e){toast('Không phát được file ghi âm trên thiết bị này.')}}else el.player.pause();updateAudioControls()};
+playback.seek.oninput=()=>{if(!audioUrl||!Number.isFinite(el.player.duration)||!el.player.duration)return;el.player.currentTime=(Number(playback.seek.value)/1000)*el.player.duration;updateAudioControls()};
+playback.mute.onclick=()=>{if(!audioUrl)return;el.player.muted=!el.player.muted;updateAudioControls()};
+['play','pause','timeupdate','durationchange','loadedmetadata','ended'].forEach(name=>el.player.addEventListener(name,updateAudioControls));
+el.download.addEventListener('click',e=>{if(!audioUrl)e.preventDefault()});
+el.deleteAudio.addEventListener('click',()=>{
+ if(!audioUrl)return;
+ if(!confirm('Xóa bản ghi âm này khỏi trang? Nếu chưa tải về, bạn sẽ không nghe lại được.'))return;
+ clearAudio(true);
+});
+updateAudioControls();
 async function startAudioCapture(){
- if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){toast('Thiết bị không hỗ trợ lưu âm thanh. Vẫn đang hiện chữ.');return}
+ const audioSession=startedAt;
+ if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){audioCaptureFailure='Trình duyệt không hỗ trợ ghi file âm thanh. Chữ vẫn được lưu bình thường.';return}
  try{
   stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
-  if(!recording){stream.getTracks().forEach(t=>t.stop());stream=null;return}
+  if(!recording || audioSession!==startedAt){stream.getTracks().forEach(t=>t.stop());stream=null;return}
   const type=mimeType();const thisRecorder=new MediaRecorder(stream,type?{mimeType:type}:undefined);
   recorder=thisRecorder;
   thisRecorder.ondataavailable=e=>{if(e.data?.size)parts.push(e.data)};
-  thisRecorder.onstop=()=>{const blob=new Blob(parts,{type:thisRecorder.mimeType||'audio/webm'});if(blob.size)showAudio(blob);parts=[]};
-  thisRecorder.onerror=()=>toast('Không lưu được âm thanh. Phần nhận chữ vẫn hoạt động.');
-  thisRecorder.start(5000);setupMeter(stream);
- }catch(e){toast('Không mở được ghi âm phụ. Phần hiện chữ vẫn tiếp tục.');audioRequested=false;}
+  thisRecorder.onstop=()=>{const blob=new Blob(parts,{type:thisRecorder.mimeType||'audio/webm'});if(blob.size)showAudio(blob);else if(!recording)showAudioError('Không có dữ liệu âm thanh để nghe lại. Phần chữ vẫn được lưu.');parts=[];stream?.getTracks().forEach(t=>t.stop());stream=null};
+  thisRecorder.onerror=()=>{audioCaptureFailure='Đã có lỗi khi ghi âm. Phần chữ vẫn được giữ.';toast('Không lưu được âm thanh. Phần nhận chữ vẫn hoạt động.')};
+  thisRecorder.start(1000);audioEverStarted=true;setupMeter(stream);
+ }catch(e){toast('Không mở được ghi âm phụ. Phần hiện chữ vẫn tiếp tục.');audioRequested=false;audioCaptureFailure='Không thể mở micro để lưu âm thanh. Phần chữ vẫn hoạt động.';}
 }
 async function begin(){
  if(recording||starting)return;
  if(!SpeechRecognition){status('KHÔNG HỖ TRỢ NHẬN CHỮ','Hãy mở bằng trình duyệt có hỗ trợ nhận dạng giọng nói.','error');return}
  if(!window.isSecureContext){status('CẦN HTTPS','Hãy mở website qua HTTPS để sử dụng micro.','error');return}
+ if(audioUrl && !confirm('Bản ghi âm cũ sẽ bị thay thế. Bạn đã tải về máy chưa?'))return;
  starting=true;el.toggle.disabled=true;
  try{
-  // Giữ bản ghi trước cho tới khi có bản ghi mới hoặc người dùng bấm Xóa.
-  parts=[];stopRequested=false;textOnlyFallback=false;audioRequested=$('captureAudio').checked;
+  if(audioUrl)clearAudio()
+  parts=[];audioCaptureFailure='';audioEverStarted=false;stopRequested=false;textOnlyFallback=false;audioRequested=true;
   recording=true;startedAt=Date.now();el.timer.textContent='00:00';clock=setInterval(tick,1000);
   el.toggle.classList.add('active');el.toggle.textContent='■ DỪNG & LƯU CHỮ';
   draftBase=el.box.value;pendingFinal='';recognitionWanted=true;
   // Ưu tiên Web Speech như bản tham chiếu: khởi động nhận chữ trước và không bắt buộc MediaRecorder.
   launchASR();status('ĐANG NHẬN CHỮ','Đang mở micro nhận giọng nói…','rec');
-  if(audioRequested)startAudioCapture();
+  startAudioCapture();
   try{window.currentWakeLock=await navigator.wakeLock?.request('screen')||null}catch(e){}
  }finally{starting=false;el.toggle.disabled=false}
 }
-function finish(){if(!recording||stopRequested)return;stopRequested=true;commitLive();recording=false;recognitionWanted=false;clearTimeout(restartTimer);const lastRecognition=recognition;recognition=null;recSeq++;recognitionRunning=false;try{lastRecognition?.stop()}catch(e){}clearTimeout(restartTimer);clearInterval(clock);tick();el.toggle.textContent='● BẮT ĐẦU HIỆN CHỮ';el.toggle.classList.remove('active');clearMeter();try{recorder?.requestData()}catch(e){}try{if(recorder?.state!=='inactive')recorder.stop()}catch(e){}stream?.getTracks().forEach(t=>t.stop());stream=null;try{window.currentWakeLock?.release()}catch(e){}window.currentWakeLock=null;status('ĐÃ DỪNG',audioRequested?'Chữ đã lưu trong sổ tay. Nếu có âm thanh, hãy tải về máy.':'Chữ đã lưu trong sổ tay. Bấm Lưu chữ để tải về máy.');save()}
+function finish(){if(!recording||stopRequested)return;stopRequested=true;commitLive();recording=false;recognitionWanted=false;clearTimeout(restartTimer);const lastRecognition=recognition;recognition=null;recSeq++;recognitionRunning=false;try{lastRecognition?.stop()}catch(e){}clearTimeout(restartTimer);clearInterval(clock);tick();el.toggle.textContent='● BẮT ĐẦU HIỆN CHỮ';el.toggle.classList.remove('active');clearMeter();try{recorder?.requestData()}catch(e){}try{if(recorder?.state!=='inactive')recorder.stop()}catch(e){}if(recorder?.state==='inactive'){stream?.getTracks().forEach(t=>t.stop());stream=null;}if(!audioEverStarted||audioCaptureFailure)showAudioError(audioCaptureFailure||'Thiết bị không tạo được bản ghi âm. Chữ vẫn được lưu.');try{window.currentWakeLock?.release()}catch(e){}window.currentWakeLock=null;status('ĐÃ DỪNG','Đã lưu chữ. Bản ghi âm sẽ hiện bên dưới khi xử lý xong.');save()}
 function selectMode(next){
  if(recording||starting){toast('Dừng ghi trước khi đổi chế độ.');return}
  mode=next;
  $('modeNormal').setAttribute('aria-pressed',String(mode==='normal'));
  $('modeLecture').setAttribute('aria-pressed',String(mode==='lecture'));
- el.box.placeholder=mode==='lecture'?'Lời thầy giảng sẽ hiện thành chữ tại đây…':'Bạn nói đến đâu, chữ sẽ hiện đến đó…';
+ el.box.placeholder=mode==='lecture'?'Để gần giáo viên sẽ thu âm tốt hơn…':'Bạn nói đến đâu, chữ sẽ hiện đến đó…';
  status('Sẵn sàng',mode==='lecture'?'Bấm BẮT ĐẦU để ghi lời giảng thành chữ':'Bấm BẮT ĐẦU để ghi lời nói thành chữ');
 }
-el.deleteAudio.onclick=()=>{
- if(!audioUrl)return;
- if(!confirm('Xóa bản ghi âm chưa? Phần chữ đã nhận sẽ được giữ nguyên.'))return;
- el.player.pause();el.player.removeAttribute('src');el.player.load();
- URL.revokeObjectURL(audioUrl);audioUrl=null;el.download.removeAttribute('href');
- el.panel.classList.remove('show');
- toast('Đã xóa bản ghi âm, phần chữ vẫn được giữ.');
-};
 $('modeNormal').onclick=()=>selectMode('normal');
 $('modeLecture').onclick=()=>selectMode('lecture');
 el.toggle.onclick=()=>recording?finish():begin();
